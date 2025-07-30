@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Li Qirui - 个人主页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#333333',
+                        secondary: '#666666',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-balance {
+                text-wrap: balance;
+            }
+            .nav-link {
+                position: relative;
+            }
+            .nav-link::after {
+                content: '';
+                position: absolute;
+                width: 0;
+                height: 1px;
+                bottom: -2px;
+                left: 0;
+                background-color: #333333;
+                transition: width 0.3s ease;
+            }
+            .nav-link:hover::after {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-primary min-h-screen flex flex flex-col p-6 transition-all duration-500">
+    <!-- 导航栏 -->
+    <header class="w-full max-w-4xl mx-auto py-6">
+        <nav class="flex flex-wrap justify-center gap-x-8 gap-y-2 text-secondary">
+            <a href="#" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">HOME</a>
+            <a href="#" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">BLOG</a>
+            <a href="#" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">LUOGU Problem Solution</a>
+            <a href="#" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">Resources</a>
+        </nav>
+    </header>
+
+    <!-- 主容器 -->
+    <div class="max-w-2xl w-full mx-auto flex flex-10 flex flex-col items-center space-y-10 flex-grow justify-center">
+
+        <!-- 名字部分 -->
+        <div class="text-center">
+            <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-light tracking-tight transition-all duration-300 hover:tracking-wide">
+                Li Qirui
+            </h1>
+            <div class="w-20 h-0.5 bg-primary mx-auto mt-4 transition-all duration-300 hover:w-32"></div>
+        </div>
+
+        <!-- 关于部分 -->
+        <div class="text-center text-secondary text-lg md:text-xl font-light">
+            <p class="text-balance">热衷于编程与技术探索</p>
+        </div>
+
+        <!-- 技能部分 -->
+        <div class="w-full">
+            <h2 class="text-sm uppercase tracking-widest text-secondary mb-6 text-center">编程语言</h2>
+            <div class="flex flex-wrap justify-center gap-4 md:gap-8">
+                <div class="flex items-center space-x-2 transition-transform duration-300 hover:scale-105">
+                    <i class="fa fa-code text-primary"></i>
+                    <span class="text-lg">C++</span>
+                </div>
+                <div class="flex items-center space-x-2 transition-transform duration-300 hover:scale-105">
+                    <i class="fa fa-python text-primary"></i>
+                    <span class="text-lg">Python</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部链接 -->
+        <div class="mt-auto pt-8 border-t border-gray-200 w-full flex justify-center space-x-6">
+            <a href="#" class="text-secondary hover:text-primary transition-colors duration-300">
+                <i class="fa fa-github text-xl"></i>
+            </a>
+            <a href="#" class="text-secondary hover:text-primary transition-colors duration-300">
+                <i class="fa fa-linkedin text-xl"></i>
+            </a>
+            <a href="#" class="text-secondary hover:text-primary transition-colors duration-300">
+                <i class="fa fa-envelope text-xl"></i>
+            </a>
+        </div>
+
+        <!-- 版权信息 -->
+        <div class="text-xs text-gray-400 mt-4">
+            &copy; <span id="currentYear"></span> Li Qirui. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        // 设置当前年份
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // 添加页面加载动画
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.classList.add('opacity-100');
+            document.body.classList.remove('opacity-0');
+        });
+    </script>
+</body>
+</html>
