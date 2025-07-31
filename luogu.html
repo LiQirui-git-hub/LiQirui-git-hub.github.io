@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUOGU 题解 - Li Qirui</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/github.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/highlight.min.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#333333',
+                        secondary: '#666666',
+                        difficulty: {
+                            easy: '#4CAF50',
+                            medium: '#FFC107',
+                            hard: '#F44336'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Consolas', 'Monaco', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto { content-visibility: auto; }
+            .solution-card {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .solution-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.08);
+            }
+            .tag {
+                @apply text-xs px-2 py-0.5 rounded-full;
+            }
+            .nav-link.active {
+                color: #333;
+                font-weight: 500;
+            }
+            .nav-link.active::after {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-primary min-h-screen">
+    <!-- 加载入统一一标题栏 -->
+    <div id="header-placeholder"></div>
+    <script>
+        $('#header-placeholder').load('/header.html', function() {
+            // 高亮当前页面导航
+            $('a[href="/luogu.html"]').addClass('active');
+        });
+    </script>
+    
+    <!-- 主内容区 -->
+    <main class="max-w-4xl w-full mx-auto flex-grow py-12 px-4">
+        <div class="mb-16 text-center">
+            <h1 class="text-[clamp(2rem,5vw,3rem)] font-light">洛谷题解</h1>
+            <div class="w-20 h-0.5 bg-primary-primary mx-auto mt-4"></div>
+            <p class="text-secondary mt-6 max-w-2xl mx-auto">
+                算法竞赛题解与分析，包含C++实现代码、解题思路和复杂度分析
+            </p>
+        </div>
+        
+        <!-- 筛选区 -->
+        <div class="bg-white p-4 rounded-lg shadow-sm mb-10">
+            <div class="flex flex-wrap gap-4 items-center">
+                <div class="w-full md:w-auto">
+                    <label class="text-sm text-secondary mr-2">难度筛选：</label>
+                    <div class="inline-flex rounded-md shadow-sm" role="group">
+                        <button type="button" class="difficulty-btn px-4 py-2 text-sm bg-primary text-white rounded hover:bg-opacity-90 rounded-l-lg" data-difficulty="all">
+                            全部
+                        </button>
+                        <button type="button" class="difficulty-btn px-4 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200" data-difficulty="easy">
+                            入门
+                        </button>
+                        <button type="button" class="difficulty-btn px-4 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200" data-difficulty="medium">
+                            普及
+                        </button>
+                        <button type="button" class="difficulty-btn px-4 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200 rounded-r-lg" data-difficulty="hard">
+                            提高
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="w-full md:w-auto ml-auto">
+                    <div class="relative">
+                        <input type="text" id="searchSolutions" 
+                               placeholder="搜索题目名称或编号..." 
+                               class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary">
+                        <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-secondary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 加载状态 -->
+        <div id="loadingState" class="text-center text-secondary py-12">
+            <i class="fa fa-spinner fa-spin text-2xl mb-4"></i>
+            <p>加载题解列表中...</p>
+        </div>
+        
+        <!-- 题解列表容器 -->
+        <div id="solutionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+            <!-- 题解卡片将通过JS动态生成 -->
+        </div>
+        
+        <!-- 空状态 -->
+        <div id="emptyState" class="text-center text-secondary py-12 hidden">
+            <i class="fa fa-code text-4xl mb-4 opacity-30"></i>
+            <p>暂无题解，敬请期待</p>
+        </div>
+        
+        <!-- 错误状态 -->
+        <div id="errorState" class="text-center text-secondary py-12 hidden">
+            <i class="fa fa-exclamation-triangle text-2xl mb-4"></i>
+            <p>无法加载题解列表</p>
+        </div>
+    </main>
+    
+    <!-- 页脚 -->
+    <footer class="max-w-4xl w-full mx-auto mt-16 pb-8 px-4">
+        <div class="pt-8 border-t border-gray-200 flex justify-center space-x-6">
+            <a href="https://github.com/LiQirui-git-hub" class="text-secondary hover:text-primary transition-colors">
+                <i class="fa fa-github text-xl"></i>
+            </a>
+            <a href="#" class="text-secondary hover:text-primary transition-colors">
+                <i class="fa fa-linkedin text-xl"></i>
+            </a>
+            <a href="#" class="text-secondary hover:text-primary transition-colors">
+                <i class="fa fa-envelope text-xl"></i>
+            </a>
+        </div>
+        <div class="text-xs text-gray-400 mt-4 text-center">
+            &copy; <span id="currentYear"></span> Li Qirui. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // 设置当前年份
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // 模拟题解数据（实际项目中可从JSON文件加载）
+        const solutionsData = [
+            {
+                id: "P1001",
+                title: "A+B Problem",
+                difficulty: "easy",
+                difficultyText: "入门",
+                date: "2025-07-28",
+                tags: ["基础", "数学"],
+                description: "最基础的A+B问题，考察输入输出和基本运算",
+                contentFile: "luogu/solutions/p1001.html"
+            },
+            {
+                id: "P1035",
+                title: "级数求和",
+                difficulty: "easy",
+                difficultyText: "入门",
+                date: "2025-07-25",
+                tags: ["循环", "数学"],
+                description: "计算调和级数的和，直到满足精度要求",
+                contentFile: "luogu/solutions/p1035.html"
+            },
+            {
+                id: "P1152",
+                title: "欢乐的跳",
+                difficulty: "medium",
+                difficultyText: "普及-",
+                date: "2025-07-20",
+                tags: ["数组", "模拟"],
+                description: "判断序列是否为欢乐的跳，考察数组操作和逻辑判断",
+                contentFile: "luogu/solutions/p1152.html"
+            },
+            {
+                id: "P1217",
+                title: "回文质数",
+                difficulty: "medium",
+                difficultyText: "普及",
+                date: "2025-07-15",
+                tags: ["质数", "回文数", "枚举"],
+                description: "找出指定范围内的回文质数，考察优化算法和数学知识",
+                contentFile: "luogu/solutions/p1217.html"
+            },
+            {
+                id: "P1379",
+                title: "八数码难题",
+                difficulty: "hard",
+                difficultyText: "提高-",
+                date: "2025-07-10",
+                tags: ["BFS", "状态压缩", "哈希"],
+                description: "经典的八数码问题，使用广度优先搜索求解",
+                contentFile: "luogu/solutions/p1379.html"
+            },
+            {
+                id: "P1434",
+                title: "滑雪",
+                difficulty: "hard",
+                difficultyText: "提高",
+                date: "2025-07-05",
+                tags: ["DFS", "动态规划", "记忆化"],
+                description: "寻找最长滑雪路径，考察深度优先搜索和动态规划结合",
+                contentFile: "luogu/solutions/p1434.html"
+            }
+        ];
+        
+        // 初始化页面
+        function initPage() {
+            try {
+                // 渲染题解列表
+                renderSolutions(solutionsData);
+                
+                // 绑定筛选事件
+                bindFilterEvents();
+                
+                // 切换状态显示
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('solutionsContainer').classList.remove('hidden');
+                
+                // 空状态处理
+                if (solutionsData.length === 0) {
+                    document.getElementById('solutionsContainer').classList.add('hidden');
+                    document.getElementById('emptyState').classList.remove('hidden');
+                }
+                
+            } catch (error) {
+                console.error('加载题解失败:', error);
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('errorState').classList.remove('hidden');
+            }
+        }
+        
+        // 渲染题解列表
+        function renderSolutions(solutions) {
+            const container = document.getElementById('solutionsContainer');
+            container.innerHTML = '';
+            
+            solutions.forEach(solution => {
+                const card = document.createElement('div');
+                card.className = 'solution-card bg-white rounded-lg overflow-hidden shadow-sm';
+                card.innerHTML = `
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-lg font-medium">
+                                <a href="${solution.contentFile}" class="hover:text-primary transition-colors">
+                                    ${solution.id}: ${solution.title}
+                                </a>
+                            </h3>
+                            <span class="tag font-medium" style="background-color: rgba(var(--difficulty-color), 0.1); color: rgb(var(--difficulty-color))">
+                                ${solution.difficultyText}
+                            </span>
+                        </div>
+                        
+                        <p class="text-secondary text-sm mb-4 line-clamp-2">
+                            ${solution.description}
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${solution.tags.map(tag => `
+                                <span class="tag bg-gray-100 text-secondary">${tag}</span>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="flex justify-between items-center text-xs text-secondary">
+                            <span><i class="fa fa-calendar-o mr-1"></i>${solution.date}</span>
+                            <a href="${solution.contentFile}" class="text-primary hover:underline">
+                                查看题解 <i class="fa fa-angle-right ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+                
+                // 设置难度颜色变量
+                const colorMap = {
+                    easy: '76, 175, 80',    // 绿色
+                    medium: '255, 193, 7',  // 黄色
+                    hard: '244, 67, 54'     // 红色
+                };
+                card.style.setProperty('--difficulty-color', colorMap[solution.difficulty]);
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // 绑定筛选事件
+        function bindFilterEvents() {
+            // 难度筛选
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 更新按钮样式
+                    document.querySelectorAll('.difficulty-btn').forEach(b => {
+                        b.classList.remove('bg-primary', 'text-white');
+                        b.classList.add('bg-gray-100', 'text-secondary');
+                    });
+                    this.classList.remove('bg-gray-100', 'text-secondary');
+                    this.classList.add('bg-primary', 'text-white');
+                    
+                    // 筛选题解
+                    const difficulty = this.dataset.difficulty;
+                    filterSolutions(difficulty);
+                });
+            });
+            
+            // 搜索功能
+            document.getElementById('searchSolutions').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                const activeDifficulty = document.querySelector('.difficulty-btn.bg-primary').dataset.difficulty;
+                
+                // 先按难度筛选，再按搜索词筛选
+                let filtered = activeDifficulty === 'all' 
+                    ? solutionsData 
+                    : solutionsData.filter(s => s.difficulty === activeDifficulty);
+                
+                if (searchTerm) {
+                    filtered = filtered.filter(s => 
+                        s.title.toLowerCase().includes(searchTerm) || 
+                        s.id.toLowerCase().includes(searchTerm) ||
+                        s.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+                    );
+                }
+                
+                renderSolutions(filtered);
+                
+                // 处理空结果
+                if (filtered.length === 0) {
+                    document.getElementById('solutionsContainer').innerHTML = `
+                        <div class="col-span-1 md:col-span-2 text-center text-secondary py-12">
+                            <i class="fa fa-search text-2xl mb-2"></i>
+                            <p>未找到匹配的题解</p>
+                        </div>
+                    `;
+                }
+            });
+        }
+        
+        // 按难度筛选题解
+        function filterSolutions(difficulty) {
+            const filtered = difficulty === 'all' 
+                ? solutionsData 
+                : solutionsData.filter(solution => solution.difficulty === difficulty);
+            
+            renderSolutions(filtered);
+        }
+        
+        // 页面加载时执行
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>
