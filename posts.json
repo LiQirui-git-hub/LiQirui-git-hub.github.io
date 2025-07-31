@@ -1,10 +1,10 @@
 [
   {
-    "slug": "blog/Welcome.md",
+    "slug": "blog/welcome.md",
     "title": "欢迎",
     "date": "2025-07-31",
     "category": "Welcome",
     "coverImage": "https://picsum.photos/id/0/600/400",
-    "contentFile": "blog/Welcome.md"
+    "contentFile": "blog/welcome.md"
   }
 ]
