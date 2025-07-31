@@ -1,0 +1,54 @@
+<!-- blog/welcome.html（示例） -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎 | 博客</title>
+    <!-- 引入基础样式和工具 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 文档专用样式 -->
+    <style>
+        .doc-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .doc-content h1 { font-size: 2rem; margin: 1.5rem 0; }
+        .doc-content h2 { font-size: 1.5rem; margin: 1rem 0; }
+        .doc-content p { margin: 1rem 0; line-height: 1.6; }
+        .doc-content ul { margin: 1rem 0 1rem 2rem; }
+        .doc-content li { margin: 0.5rem 0; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 自动加载根目录的标题栏 -->
+    <div id="header-placeholder"></div>
+    <script>
+        // 从根目录加载标题栏（兼容子目录路径）
+        $('#header-placeholder').load('/header.html', function() {
+            // 高亮当前页面导航
+            $('a[href="/blog.html"]').addClass('active');
+        });
+    </script>
+
+    <!-- 纯文档内容（仅保留正文） -->
+    <div class="doc-container doc-content">
+        <h1>欢迎来到我的博客</h1>
+        <p>这是第一篇测试文章，以下是网站的主要内容：</p>
+        
+        <h2>网站内容</h2>
+        <ul>
+            <li><strong>个人主页</strong>：关于我的简介和技术栈</li>
+            <li><strong>博客(Blog)</strong>：包含C++、Python等技术文章</li>
+            <li><strong>洛谷题解</strong>：算法竞赛题解与分析</li>
+            <li><strong>资源中心</strong>：我的开源项目、工具和代码库</li>
+        </ul>
+        
+        <h2>联系我</h2>
+        <p>GitHub: <a href="https://github.com/LiQirui-git-hub" class="text-primary underline">LiQirui-git-hub</a></p>
+    </div>
+</body>
+</html>
