@@ -3,7 +3,6 @@ title: "Li Qirui 的个人网站"
 date: "2025-07-31"
 category: "Welcome"
 coverImage: "https://picsum.photos/id/0/600/400"
-permalink: /welcome.html
 ---
 
 # Li Qirui 的个人网站
