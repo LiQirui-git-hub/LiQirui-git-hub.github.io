@@ -1,3 +1,10 @@
+---
+title: "Li Qirui 的个人网站"
+date: "2025-07-31"
+category: "Welcome"
+coverImage: "https://picsum.photos/id/0/600/400"
+---
+
 # Li Qirui 的个人网站
 
 欢迎访问我的个人网站项目仓库！这个网站展示了我的技术博客、算法题解和项目资源。
