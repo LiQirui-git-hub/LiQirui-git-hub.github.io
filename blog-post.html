@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/github.min.css">
     <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/highlight.min.js"></script>
     
-    <!-- 配置Tailwind自定义颜色和字体，与主页保持一致 -->
+    <!-- 配置Tailwind自定义颜色和字体 -->
     <script>
         tailwind.config = {
             theme: {
@@ -117,7 +117,7 @@
     </style>
 </head>
 <body class="bg-gray-50 text-primary min-h-screen flex flex-col p-6 transition-all duration-500">
-    <!-- 导航栏 - 与主页保持一致 -->
+    <!-- 导航栏（移除登录相关链接） -->
     <header class="w-full max-w-4xl mx-auto py-6">
         <nav class="flex flex-wrap justify-center gap-x-8 gap-y-2 text-secondary">
             <a href="index.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">HOME</a>
@@ -172,7 +172,7 @@
         </div>
     </main>
     
-    <!-- 页脚 - 与主页保持一致 -->
+    <!-- 页脚（移除登录相关脚本引用） -->
     <footer class="max-w-3xl w-full mx-auto mt-16 pb-8">
         <div class="pt-8 border-t border-gray-200 w-full flex justify-center space-x-6">
             <a href="#" class="text-secondary hover:text-primary transition-colors duration-300">
@@ -191,7 +191,6 @@
         </div>
     </footer>
 
-    <script src="auth.js"></script>
     <script>
         // 设置当前年份
         document.getElementById('currentYear').textContent = new Date().getFullYear();
@@ -313,3 +312,4 @@
     </script>
 </body>
 </html>
+    
