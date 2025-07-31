@@ -6,11 +6,11 @@
     <title>Blog Post - Li Qirui</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/github.min.css">
     <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/highlight.min.js"></script>
     
-    <!-- 配置Tailwind自定义颜色和字体 -->
+    <!-- Tailwind 配置 -->
     <script>
         tailwind.config = {
             theme: {
@@ -30,25 +30,7 @@
     
     <style type="text/tailwindcss">
         @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-            .nav-link {
-                position: relative;
-            }
-            .nav-link::after {
-                content: '';
-                position: absolute;
-                width: 0;
-                height: 1px;
-                bottom: -2px;
-                left: 0;
-                background-color: #333333;
-                transition: width 0.3s ease;
-            }
-            .nav-link:hover::after {
-                width: 100%;
-            }
+            .content-auto { content-visibility: auto; }
             .prose {
                 max-width: 65ch;
                 color: #333;
@@ -90,46 +72,43 @@
                 margin-bottom: 1rem;
                 padding-left: 1.5rem;
             }
-            .prose ul {
-                list-style-type: disc;
-            }
-            .prose ol {
-                list-style-type: decimal;
-            }
-            .prose li {
-                margin-bottom: 0.5rem;
-            }
+            .prose ul { list-style-type: disc; }
+            .prose ol { list-style-type: decimal; }
+            .prose li { margin-bottom: 0.5rem; }
             .prose a {
                 color: #333;
                 text-decoration: underline;
                 text-underline-offset: 2px;
             }
-            .prose a:hover {
-                color: #000;
-            }
+            .prose a:hover { color: #000; }
             .prose img {
                 max-width: 100%;
                 height: auto;
                 margin: 1.5rem 0;
                 border-radius: 0.5rem;
             }
+            .nav-link.active {
+                color: #333;
+                font-weight: 500;
+            }
+            .nav-link.active::after {
+                width: 100%;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50 text-primary min-h-screen flex flex-col p-6 transition-all duration-500">
-    <!-- 导航栏（移除登录相关链接） -->
-    <header class="w-full max-w-4xl mx-auto py-6">
-        <nav class="flex flex-wrap justify-center gap-x-8 gap-y-2 text-secondary">
-            <a href="index.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">HOME</a>
-            <a href="blog.html" class="nav-link text-lg font-light transition-colors duration-300 text-primary">BLOG</a>
-            <a href="luogu.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">LUOGU Problem Solution</a>
-            <a href="resources.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">Resources</a>
-        </nav>
-    </header>
+<body class="bg-gray-50 text-primary min-h-screen">
+    <!-- 加载统一标题栏 -->
+    <div id="header-placeholder"></div>
+    <script>
+        $('#header-placeholder').load('/header.html', function() {
+            // 高亮博客导航
+            $('a[href="/blog.html"]').addClass('active');
+        });
+    </script>
     
-    <!-- 主容器 -->
-    <main class="max-w-3xl w-full mx-auto flex-grow py-8">
-        <!-- 文章内容 -->
+    <!-- 主内容区 -->
+    <main class="max-w-3xl w-full mx-auto flex-grow py-10 px-4">
         <article>
             <!-- 加载状态 -->
             <div id="loadingState" class="text-center text-secondary py-12">
@@ -139,12 +118,12 @@
             
             <!-- 文章标题区域 -->
             <div id="postHeader" class="mb-10 hidden">
-                <div class="flex items-center text-sm text-secondary mb-3">
+                <div class="flex flex-wrap items-center gap-4 text-sm text-secondary mb-3">
                     <span id="postDate"><i class="fa fa-calendar-o mr-2"></i></span>
-                    <span id="postCategory" class="ml-4"><i class="fa fa-tag mr-2"></i></span>
+                    <span id="postCategory"><i class="fa fa-tag mr-2"></i></span>
                 </div>
                 <h1 id="postTitle" class="text-[clamp(1.8rem,4vw,2.5rem)] font-light mb-6"></h1>
-                <img id="postCover" src="" alt="" class="w-full h-64 md:h-80 object-cover mb-8 rounded">
+                <img id="postCover" src="" alt="" class="w-full h-64 md:h-80 object-cover mb-8 rounded-lg shadow-sm">
             </div>
             
             <!-- 文章内容区域 -->
@@ -154,38 +133,37 @@
             <div id="errorState" class="text-center text-secondary py-12 hidden">
                 <i class="fa fa-exclamation-triangle text-2xl mb-4"></i>
                 <p>无法加载文章，请稍后再试</p>
-                <a href="blog.html" class="inline-block mt-4 text-primary hover:underline">返回博客列表</a>
+                <a href="/blog.html" class="inline-block mt-4 text-primary hover:underline">返回博客列表</a>
             </div>
         </article>
         
         <!-- 文章导航 -->
-        <div id="postNavigation" class="mt-16 pt-8 border-t border-gray-200 flex justify-between hidden">
+        <div id="postNavigation" class="mt-16 pt-8 border-t border-gray-200 flex flex-col sm:flex-row justify-between gap-4 hidden">
             <a id="prevPost" href="#" class="flex items-center text-primary hover:underline">
                 <i class="fa fa-long-arrow-left mr-2"></i> 上一篇
             </a>
-            <a href="blog.html" class="text-primary hover:underline">
+            <a href="/blog.html" class="text-primary hover:underline self-center">
                 回到列表
             </a>
-            <a id="nextPost" href="#" class="flex items-center text-primary hover:underline">
+            <a id="nextPost" href="#" class="flex items-center justify-end text-primary hover:underline">
                 下一篇 <i class="fa fa-long-arrow-right ml-2"></i>
             </a>
         </div>
     </main>
     
-    <!-- 页脚（移除登录相关脚本引用） -->
-    <footer class="max-w-3xl w-full mx-auto mt-16 pb-8">
+    <!-- 页脚 -->
+    <footer class="max-w-3xl w-full mx-auto mt-16 pb-8 px-4">
         <div class="pt-8 border-t border-gray-200 w-full flex justify-center space-x-6">
-            <a href="#" class="text-secondary hover:text-primary transition-colors duration-300">
+            <a href="https://github.com/LiQirui-git-hub" class="text-secondary hover:text-primary transition-colors">
                 <i class="fa fa-github text-xl"></i>
             </a>
-            <a href="#" class="text-secondary hover:text-primary transition-colors duration-300">
+            <a href="#" class="text-secondary hover:text-primary transition-colors">
                 <i class="fa fa-linkedin text-xl"></i>
             </a>
-            <a href="#" class="text-secondary hover:text-primary transition-colors duration-300">
+            <a href="#" class="text-secondary hover:text-primary transition-colors">
                 <i class="fa fa-envelope text-xl"></i>
             </a>
         </div>
-        
         <div class="text-xs text-gray-400 mt-4 text-center">
             &copy; <span id="currentYear"></span> Li Qirui. All rights reserved.
         </div>
@@ -195,19 +173,17 @@
         // 设置当前年份
         document.getElementById('currentYear').textContent = new Date().getFullYear();
         
-        // 获取URL中的文章参数
+        // 获取URL中的文章标识
         function getPostSlugFromUrl() {
             const params = new URLSearchParams(window.location.search);
             return params.get('post');
         }
         
-        // 从JSON加载文章数据
+        // 加载文章索引数据
         async function loadBlogPosts() {
             try {
-                const response = await fetch('posts.json');
-                if (!response.ok) {
-                    throw new Error('无法加载文章列表');
-                }
+                const response = await fetch('/posts.json');
+                if (!response.ok) throw new Error('无法加载文章列表');
                 return await response.json();
             } catch (error) {
                 console.error('加载文章数据失败:', error);
@@ -215,7 +191,7 @@
             }
         }
         
-        // 查找上一篇和下一篇文章
+        // 查找上一篇/下一篇文章
         function findNavPosts(currentIndex, allPosts) {
             return {
                 prev: currentIndex > 0 ? allPosts[currentIndex - 1] : null,
@@ -223,7 +199,7 @@
             };
         }
         
-        // 加载并显示Markdown文章
+        // 加载并渲染文章内容
         async function loadAndRenderPost(post, allPosts) {
             try {
                 // 填充文章头部信息
@@ -233,41 +209,45 @@
                 document.getElementById('postCover').src = post.coverImage;
                 document.getElementById('postCover').alt = post.title;
                 
-                // 加载Markdown内容
+                // 加载HTML文章内容
                 const response = await fetch(post.contentFile);
-                if (!response.ok) {
-                    throw new Error('无法加载文章内容');
-                }
+                if (!response.ok) throw new Error('无法加载文章内容');
                 
-                const markdownContent = await response.text();
+                // 提取文章正文（过滤标题栏等重复内容）
+                const htmlContent = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlContent, 'text/html');
+                const articleContent = doc.querySelector('.doc-content') || doc.body;
                 
-                // 将Markdown转换为HTML并显示
-                document.getElementById('postContent').innerHTML = marked.parse(markdownContent);
+                // 渲染文章内容
+                document.getElementById('postContent').innerHTML = articleContent.innerHTML;
                 
                 // 代码高亮
                 hljs.highlightAll();
                 
-                // 设置文章导航
+                // 设置上下篇导航
                 const currentIndex = allPosts.findIndex(p => p.slug === post.slug);
                 const navPosts = findNavPosts(currentIndex, allPosts);
                 
+                // 上一篇
                 if (navPosts.prev) {
-                    document.getElementById('prevPost').href = `blog-post.html?post=${navPosts.prev.slug}`;
+                    document.getElementById('prevPost').href = navPosts.prev.contentFile;
                     document.getElementById('prevPost').innerHTML = `<i class="fa fa-long-arrow-left mr-2"></i> ${navPosts.prev.title}`;
                 } else {
                     document.getElementById('prevPost').style.opacity = '0.5';
                     document.getElementById('prevPost').style.pointerEvents = 'none';
                 }
                 
+                // 下一篇
                 if (navPosts.next) {
-                    document.getElementById('nextPost').href = `blog-post.html?post=${navPosts.next.slug}`;
+                    document.getElementById('nextPost').href = navPosts.next.contentFile;
                     document.getElementById('nextPost').innerHTML = `${navPosts.next.title} <i class="fa fa-long-arrow-right ml-2"></i>`;
                 } else {
                     document.getElementById('nextPost').style.opacity = '0.5';
                     document.getElementById('nextPost').style.pointerEvents = 'none';
                 }
                 
-                // 隐藏加载状态，显示文章内容
+                // 显示文章内容，隐藏加载状态
                 document.getElementById('loadingState').classList.add('hidden');
                 document.getElementById('postHeader').classList.remove('hidden');
                 document.getElementById('postContent').classList.remove('hidden');
@@ -285,12 +265,12 @@
             const postSlug = getPostSlugFromUrl();
             
             if (!postSlug) {
-                // 如果没有指定文章，重定向到博客列表
-                window.location.href = 'blog.html';
+                // 无文章标识时跳转到博客列表
+                window.location.href = '/blog.html';
                 return;
             }
             
-            // 从JSON加载所有文章数据
+            // 加载文章索引并查找当前文章
             const blogPosts = await loadBlogPosts();
             if (!blogPosts) {
                 document.getElementById('loadingState').classList.add('hidden');
@@ -298,7 +278,6 @@
                 return;
             }
             
-            // 查找当前文章
             const currentPost = blogPosts.find(post => post.slug === postSlug);
             if (!currentPost) {
                 document.getElementById('loadingState').classList.add('hidden');
@@ -306,10 +285,9 @@
                 return;
             }
             
-            // 加载并显示文章
+            // 渲染当前文章
             loadAndRenderPost(currentPost, blogPosts);
         });
     </script>
 </body>
 </html>
-    
