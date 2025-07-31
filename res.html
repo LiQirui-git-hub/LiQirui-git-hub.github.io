@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources - Li Qirui</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- 保持与主站一致的样式配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#333333',
+                        secondary: '#666666',
+                        accent: '#888888',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .nav-link {
+                position: relative;
+            }
+            .nav-link::after {
+                content: '';
+                position: absolute;
+                width: 0;
+                height: 1px;
+                bottom: -2px;
+                left: 0;
+                background-color: #333333;
+                transition: width 0.3s ease;
+            }
+            .nav-link:hover::after {
+                width: 100%;
+            }
+            .resource-card {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .resource-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            }
+            .changelog-item:not(:last-child) {
+                border-left: 1px solid #e5e7eb;
+                padding-left: 1.5rem;
+                margin-left: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-primary min-h-screen flex flex-col p-6">
+    <!-- 导航栏 -->
+    <header class="w-full max-w-4xl mx-auto py-6">
+        <nav class="flex flex-wrap justify-center gap-x-8 gap-y-2 text-secondary">
+            <a href="index.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">HOME</a>
+            <a href="blog.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">BLOG</a>
+            <a href="luogu.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">LUOGU Problem Solution</a>
+            <a href="res.html" class="nav-link text-lg font-light transition-colors duration-300 text-primary">Resources</a>
+        </nav>
+    </header>
+
+    <!-- 主容器 -->
+    <main class="max-w-4xl w-full mx-auto flex-grow py-8">
+        <!-- 页面标题 -->
+        <div class="mb-16 text-center">
+            <h1 class="text-[clamp(2rem,5vw,3rem)] font-light tracking-tight">Resources</h1>
+            <div class="w-20 h-0.5 bg-primary mx-auto mt-4"></div>
+            <p class="text-secondary mt-6 max-w-2xl mx-auto">项目资源与工具集合，包含源代码、二进制文件及更新记录</p>
+        </div>
+
+        <!-- 资源项目列表 -->
+        <div class="space-y-16">
+            <!-- 项目 1 -->
+            <section class="resource-card bg-white p-6 md:p-8 rounded-lg">
+                <div class="flex flex-col md:flex-row md:items-start gap-8">
+                    <div class="md:w-1/4">
+                        <div class="bg-gray-100 h-48 flex items-center justify-center rounded">
+                            <i class="fa fa-code text-5xl text-primary/60"></i>
+                        </div>
+                        <div class="mt-6">
+                            <h3 class="text-sm uppercase tracking-wider text-secondary mb-3">项目类型</h3>
+                            <p>C++ 工具库</p>
+
+                            <h3 class="text-sm uppercase tracking-wider text-secondary mb-3 mt-4">最新版本</h3>
+                            <p class="font-medium">v1.2.0</p>
+
+                            <h3 class="text-sm uppercase tracking-wider text-secondary mb-3 mt-4">发布日期</h3>
+                            <p>2023-07-15</p>
+                        </div>
+                    </div>
+
+                    <div class="md:w-3/4">
+                        <h2 class="text-2xl font-light mb-4">算法工具箱</h2>
+                        <p class="text-secondary mb-6">一个包含常用算法和数据结构的C++工具库，适用于竞赛和项目开发。包含排序算法、图论工具、字符串处理等模块。</p>
+
+                        <!-- 下载区域 -->
+                        <div class="mb-8">
+                            <h3 class="text-sm uppercase tracking-wider text-secondary mb-3">下载</h3>
+                            <div class="flex flex-wrap gap-4">
+                                <a href="#" class="inline-flex items-center px-4 py-2 border border-gray-200 hover:border-primary rounded transition-colors">
+                                    <i class="fa fa-download mr-2"></i> 源代码 (ZIP)
+                                </a>
+                                <a href="#" class="inline-flex items-center px-4 py-2 border border-gray-200 hover:border-primary rounded transition-colors">
+                                    <i class="fa fa-github mr-2"></i> GitHub 仓库
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- 更新日志 -->
+                        <div>
+                            <h3 class="text-sm uppercase tracking-wider text-secondary mb-4">更新日志</h3>
+                            <div class="space-y-6">
+                                <div class="changelog-item">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                                            <i class="fa fa-circle text-xs text-primary"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <h4 class="font-medium">v1.2.0 (2023-07-15)</h4>
+                                            <ul class="mt-2 text-secondary space-y-1">
+                                                <li>• 添加了KMP字符串匹配算法实现</li>
+                                                <li>• 优化了二叉树操作的性能</li>
+                                                <li>• 修复了图论模块中的几个bug</li>
+                                                <li>• 添加了更多单元测试</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="changelog-item">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                                            <i class="fa fa-circle text-xs text-primary"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <h4 class="font-medium">v1.1.0 (2023-06-02)</h4>
+                                            <ul class="mt-2 text-secondary space-y-1">
+                                                <li>• 新增图论相关算法</li>
+                                                <li>• 添加Dijkstra和Floyd最短路径算法</li>
+                                                <li>• 改进文档注释</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                                            <i class="fa fa-circle text-xs text-primary"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <h4 class="font-medium">v1.0.0 (2023-04-18)</h4>
+                                            <ul class="mt-2 text-secondary space-y-1">
+                                                <li>• 初始版本发布</li>
+                                                <li>• 包含基础数据结构实现</li>
+                                                <li>• 包含常用排序算法</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a href="#" class="inline-block mt-4 text-sm text-primary hover:underline">查看完整日志</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="max-w-3xl w-full mx-auto mt-16 pb-8">
+        <div class="pt-8 border-t border-gray-200 w-full flex justify-center space-x-6">
+            <a href="LiQirui-git-hub_GH.html" class="text-secondary hover:text-primary transition-colors duration-300">
+                <i class="fa fa-github text-xl"></i>
+            </a>
+            <a href="#" class="text-secondary hover:text-primary transition-colors duration-300">
+                <i class="fa fa-linkedin text-xl"></i>
+            </a>
+            <a href="#" class="text-secondary hover:text-primary transition-colors duration-300">
+                <i class="fa fa-envelope text-xl"></i>
+            </a>
+        </div>
+
+        <div class="text-xs text-gray-400 mt-4 text-center">
+            &copy; <span id="currentYear"></span> Li Qirui. All rights reserved.
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script>
+        // 设置当前年份
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
