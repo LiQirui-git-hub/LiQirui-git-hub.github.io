@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog - Li Qirui</title>。
+    <title>Blog - Li Qirui</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
-    <!-- 配置Tailwind（保持不变） -->
+    <!-- 配置Tailwind -->
     <script>
         tailwind.config = {
             theme: {
@@ -47,7 +47,7 @@
     </style>
 </head>
 <body class="bg-gray-50 text-primary min-h-screen flex flex-col p-6">
-    <!-- 导航栏（保持不变） -->
+    <!-- 导航栏（移除登录相关链接） -->
     <header class="w-full max-w-4xl mx-auto py-6">
         <nav class="flex flex-wrap justify-center gap-x-8 gap-y-2 text-secondary">
             <a href="index.html" class="nav-link text-lg font-light hover:text-primary">HOME</a>
@@ -75,12 +75,13 @@
         
         <!-- 错误状态 -->
         <div id="errorState" class="text-center text-secondary py-12 hidden">
+            
             <i class="fa fa-exclamation-triangle text-2xl mb-4"></i>
             <p>无法加载文章列表</p>
         </div>
     </main>
     
-    <!-- 页脚（保持不变） -->
+    <!-- 页脚（移除登录相关脚本引用） -->
     <footer class="max-w-3xl w-full mx-auto mt-16 pb-8">
         <div class="pt-8 border-t border-gray-200 flex justify-center space-x-6">
             <a href="#" class="text-secondary hover:text-primary"><i class="fa fa-github text-xl"></i></a>
