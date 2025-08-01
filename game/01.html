@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级飞机射击游戏</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#EF4444',
+                        accent: '#F59E0B',
+                        bullet: '#FBBF24',
+                        shield: '#60A5FA',
+                        chaff: '#D1D5DB',
+                        missile: '#10B981',
+                        tracker: '#8B5CF6',
+                        jammer: '#EC4899',
+                        ally: '#22D3EE'
+                    },
+                    fontFamily: {
+                        game: ['"Press Start 2P"', 'cursive', 'system-ui'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .pixel-borders {
+                box-shadow: 0 0 0 2px #000;
+            }
+            .text-shadow {
+                text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+            }
+            .glow {
+                filter: drop-shadow(0 0 8px currentColor);
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center p-4 overflow-hidden">
+    <div class="relative">
+        <!-- 游戏容器 -->
+        <canvas id="gameCanvas" class="pixel-borders bg-gray-800"></canvas>
+        
+        <!-- 游戏开始界面 -->
+        <div id="startScreen" class="absolute inset-0 bg-gray-900/90 flex flex-col items-center justify-center z-10">
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-game text-primary text-shadow mb-8">飞机射击游戏</h1>
+            <p class="text-white text-lg mb-6 max-w-md text-center px-4">
+                方向键: 移动<br>
+                空格键: 发射子弹<br>
+                B键: 释放铝箔<br>
+                N键: 通讯干扰<br>
+                M键: 发射导弹<br>
+                C键: 召唤友军 (需要天线)<br>
+                收集道具提升能力，击落敌机获取分数
+            </p>
+            <button id="startButton" class="bg-primary hover:bg-primary/80 text-white font-bold py-3 px-8 rounded transition-all transform hover:scale-105 active:scale-95 font-game">
+                开始游戏
+            </button>
+        </div>
+        
+        <!-- 游戏结束界面 -->
+        <div id="gameOverScreen" class="absolute inset-0 bg-gray-900/90 flex flex-col items-center justify-center z-10 hidden">
+            <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-game text-secondary text-shadow mb-4">游戏结束</h2>
+            <p id="finalScore" class="text-white text-xl mb-8 font-game">分数: 0</p>
+            <button id="restartButton" class="bg-primary hover:bg-primary/80 text-white font-bold py-3 px-8 rounded transition-all transform hover:scale-105 active:scale-95 font-game">
+                再来一次
+            </button>
+        </div>
+        
+        <!-- 游戏暂停界面 -->
+        <div id="pauseScreen" class="absolute inset-0 bg-gray-900/70 flex flex-col items-center justify-center z-10 hidden">
+            <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-game text-primary text-shadow mb-8">游戏暂停</h2>
+            <button id="resumeButton" class="bg-primary hover:bg-primary/80 text-white font-bold py-3 px-8 rounded transition-all transform hover:scale-105 active:scale-95 font-game">
+                继续游戏
+            </button>
+        </div>
+        
+        <!-- 游戏UI -->
+        <div id="gameUI" class="absolute top-4 left-4 z-10 flex items-center space-x-4 flex-wrap">
+            <div class="bg-gray-900/80 px-3 py-2 rounded pixel-borders">
+                <span class="text-white mr-2"><i class="fa fa-heart text-secondary"></i></span>
+                <span id="lives" class="text-white font-game">3</span>
+            </div>
+            <div class="bg-gray-900/80 px-3 py-2 rounded pixel-borders">
+                <span class="text-white mr-2"><i class="fa fa-star text-bullet"></i></span>
+                <span id="score" class="text-white font-game">0</span>
+            </div>
+            <div class="bg-gray-900/80 px-3 py-2 rounded pixel-borders">
+                <span class="text-white mr-2"><i class="fa fa-signal text-accent"></i></span>
+                <span id="level" class="text-white font-game">1</span>
+            </div>
+            <div class="bg-gray-900/80 px-3 py-2 rounded pixel-borders">
+                <span class="text-white mr-2"><i class="fa fa-rocket text-missile"></i></span>
+                <span id="missiles" class="text-white font-game">3</span>
+            </div>
+            <div class="bg-gray-900/80 px-3 py-2 rounded pixel-borders">
+                <span class="text-white mr-2"><i class="fa fa-wifi text-ally"></i></span>
+                <span id="antennas" class="text-white font-game">0</span>
+            </div>
+        </div>
+        
+        <!-- 道具状态显示 -->
+        <div id="powerupStatus" class="absolute top-4 right-4 z-10 flex flex-wrap justify-end gap-2">
+            <div id="tripleShotIndicator" class="bg-gray-900/80 px-3 py-2 rounded pixel-borders hidden">
+                <span class="text-bullet mr-1"><i class="fa fa-crosshairs"></i></span>
+                <span id="tripleShotTimer" class="text-white font-game">5</span>
+            </div>
+            <div id="trackerIndicator" class="bg-gray-900/80 px-3 py-2 rounded pixel-borders hidden">
+                <span class="text-tracker mr-1"><i class="fa fa-compass"></i></span>
+                <span id="trackerTimer" class="text-white font-game">5</span>
+            </div>
+            <div id="shieldIndicator" class="bg-gray-900/80 px-3 py-2 rounded pixel-borders hidden">
+                <span class="text-shield mr-1"><i class="fa fa-shield"></i></span>
+            </div>
+            <div id="chaffIndicator" class="bg-gray-900/80 px-3 py-2 rounded pixel-borders hidden">
+                <span class="text-chaff mr-1"><i class="fa fa-cloud"></i></span>
+                <span id="chaffCooldown" class="text-white font-game">0</span>
+            </div>
+            <div id="jammerIndicator" class="bg-gray-900/80 px-3 py-2 rounded pixel-borders hidden">
+                <span class="text-jammer mr-1"><i class="fa fa-wifi"></i></span>
+                <span id="jammerCooldown" class="text-white font-game">0</span>
+            </div>
+            <div id="allyIndicator" class="bg-gray-900/80 px-3 py-2 rounded pixel-borders hidden">
+                <span class="text-ally mr-1"><i class="fa fa-fighter-jet"></i></span>
+                <span id="allyTimer" class="text-white font-game">0</span>
+            </div>
+        </div>
+        
+        <!-- 暂停按钮 -->
+        <button id="pauseButton" class="absolute top-4 right-4 z-10 bg-gray-900/80 hover:bg-gray-800 text-white p-2 rounded pixel-borders transition-colors">
+            <i class="fa fa-pause"></i>
+        </button>
+    </div>
+
+    <script>
+        // 游戏初始化
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        canvas.width = 800;
+        canvas.height = 600;
+        
+        // 游戏状态
+        let gameRunning = false;
+        let gamePaused = false;
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let missiles = 3;
+        let antennas = 0;
+        
+        // 风效果参数
+        let wind = {
+            x: 0,
+            y: 0,
+            update() {
+                // 随机变化风的方向和强度
+                this.x += (Math.random() - 0.5) * 0.2;
+                this.y += (Math.random() - 0.5) * 0.1;
+                
+                // 限制风力范围
+                this.x = Math.max(-1, Math.min(1, this.x));
+                this.y = Math.max(-0.5, Math.min(0.5, this.y));
+            }
+        };
+        
+        // 友军管理
+        const allies = {
+            list: [],
+            spawn(x, y) {
+                this.list.push({
+                    x: x,
+                    y: y,
+                    width: 30,
+                    height: 40,
+                    speed: 4,
+                    color: '#22D3EE',
+                    bullets: [],
+                    bulletSpeed: 8,
+                    bulletSize: 6,
+                    fireRate: 60, // 每60帧发射一次
+                    fireTimer: 0,
+                    lifetime: 1500, // 存在25秒（60帧/秒）
+                    age: 0
+                });
+            },
+            update() {
+                // 更新所有友军
+                for (let i = this.list.length - 1; i >= 0; i--) {
+                    const ally = this.list[i];
+                    ally.age++;
+                    
+                    // 移除过期友军
+                    if (ally.age > ally.lifetime) {
+                        this.list.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // 友军移动模式：左右巡逻
+                    ally.x += Math.sin(ally.age * 0.02) * 0.5;
+                    ally.y = Math.max(50, ally.y - 0.3); // 缓慢上升
+                    
+                    // 边界检查
+                    if (ally.x < ally.width / 2) ally.x = ally.width / 2;
+                    if (ally.x > canvas.width - ally.width / 2) ally.x = canvas.width - ally.width / 2;
+                    
+                    // 射击逻辑
+                    ally.fireTimer++;
+                    if (ally.fireTimer >= ally.fireRate) {
+                        ally.fireTimer = 0;
+                        
+                        // 寻找最近的敌机
+                        let closestEnemy = null;
+                        let closestDistance = Infinity;
+                        
+                        for (const enemy of enemies.list) {
+                            if (enemy.y > ally.y) { // 只攻击友军下方的敌机
+                                const distX = enemy.x + enemy.width/2 - ally.x;
+                                const distY = enemy.y + enemy.height/2 - ally.y;
+                                const distance = Math.sqrt(distX * distX + distY * distY);
+                                
+                                if (distance < closestDistance && distance < 300) {
+                                    closestDistance = distance;
+                                    closestEnemy = enemy;
+                                }
+                            }
+                        }
+                        
+                        // 向敌机射击
+                        if (closestEnemy) {
+                            const angle = Math.atan2(
+                                closestEnemy.y + closestEnemy.height/2 - ally.y,
+                                closestEnemy.x + closestEnemy.width/2 - ally.x
+                            );
+                            
+                            ally.bullets.push({
+                                x: ally.x,
+                                y: ally.y + ally.height/4,
+                                width: ally.bulletSize,
+                                height: ally.bulletSize,
+                                speed: ally.bulletSpeed,
+                                angle: angle
+                            });
+                        } else {
+                            // 没有目标时向前射击
+                            ally.bullets.push({
+                                x: ally.x,
+                                y: ally.y + ally.height/4,
+                                width: ally.bulletSize,
+                                height: ally.bulletSize,
+                                speed: ally.bulletSpeed,
+                                angle: Math.PI/2 // 向下射击
+                            });
+                        }
+                    }
+                    
+                    // 更新友军子弹
+                    for (let j = ally.bullets.length - 1; j >= 0; j--) {
+                        const bullet = ally.bullets[j];
+                        
+                        bullet.x += Math.cos(bullet.angle) * bullet.speed;
+                        bullet.y += Math.sin(bullet.angle) * bullet.speed;
+                        
+                        // 移除出界子弹
+                        if (bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) {
+                            ally.bullets.splice(j, 1);
+                            continue;
+                        }
+                        
+                        // 绘制友军子弹
+                        ctx.beginPath();
+                        ctx.arc(bullet.x, bullet.y, bullet.width / 2, 0, Math.PI * 2);
+                        ctx.fillStyle = '#22D3EE';
+                        ctx.fill();
+                        
+                        // 检查是否击中敌机
+                        for (let k = enemies.list.length - 1; k >= 0; k--) {
+                            const enemy = enemies.list[k];
+                            if (bullet.x > enemy.x && bullet.x < enemy.x + enemy.width &&
+                                bullet.y > enemy.y && bullet.y < enemy.y + enemy.height) {
+                                
+                                enemy.health--;
+                                if (enemy.health <= 0) {
+                                    enemies.destroyEnemy(enemy, k);
+                                }
+                                
+                                ally.bullets.splice(j, 1);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // 绘制友军飞机
+                    ctx.save();
+                    ctx.translate(ally.x, ally.y);
+                    
+                    // 友军飞机形状（倒三角形）
+                    ctx.beginPath();
+                    ctx.moveTo(0, ally.height / 2);
+                    ctx.lineTo(-ally.width / 2, -ally.height / 2);
+                    ctx.lineTo(ally.width / 2, -ally.height / 2);
+                    ctx.closePath();
+                    ctx.fillStyle = ally.color;
+                    ctx.fill();
+                    
+                    // 友军标志
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, ally.width / 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                    
+                    // 友军存在时间指示（淡入淡出效果）
+                    if (ally.age < 60 || ally.age > ally.lifetime - 120) {
+                        const alpha = ally.age < 60 ? ally.age / 60 : 
+                                      (ally.lifetime - ally.age) / 120;
+                        
+                        ctx.beginPath();
+                        ctx.arc(ally.x, ally.y, ally.width / 2 + 5, 0, Math.PI * 2);
+                        ctx.strokeStyle = `rgba(34, 211, 238, ${alpha})`;
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                }
+                
+                // 更新友军指示器
+                const allyIndicator = document.getElementById('allyIndicator');
+                const allyTimer = document.getElementById('allyTimer');
+                
+                if (this.list.length > 0) {
+                    const remainingTime = Math.ceil((this.list[0].lifetime - this.list[0].age) / 60);
+                    allyIndicator.classList.remove('hidden');
+                    allyTimer.textContent = remainingTime;
+                } else {
+                    allyIndicator.classList.add('hidden');
+                }
+            },
+            clear() {
+                this.list = [];
+            }
+        };
+        
+        // 玩家飞机
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height - 80,
+            width: 40,
+            height: 50,
+            speed: 6,
+            color: '#3B82F6',
+            isShielded: false,
+            shieldTimeRemaining: 0,
+            hasTripleShot: false,
+            tripleShotTimeRemaining: 0,
+            hasTracker: false,
+            trackerTimeRemaining: 0,
+            bullets: [],
+            bulletSpeed: 10,
+            bulletSize: 10,
+            bulletColor: '#FBBF24',
+            trackerColor: '#8B5CF6',
+            // 铝箔相关属性
+            chaff: [],
+            chaffCooldown: 0,
+            maxChaffCooldown: 300, // 5秒冷却（60帧/秒）
+            // 通讯干扰相关属性
+            jammerActive: false,
+            jammerCooldown: 0,
+            maxJammerCooldown: 600, // 10秒冷却
+            jammerDuration: 120, // 干扰持续2秒
+            jammerTimeRemaining: 0,
+            // 导弹相关属性
+            missiles: [],
+            missileSpeed: 8,
+            missileSize: 15,
+            missileColor: '#10B981',
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // 绘制飞机主体（三角形）
+                ctx.beginPath();
+                ctx.moveTo(0, -this.height / 2);
+                ctx.lineTo(-this.width / 2, this.height / 2);
+                ctx.lineTo(this.width / 2, this.height / 2);
+                ctx.closePath();
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                // 添加细节
+                ctx.beginPath();
+                ctx.moveTo(0, -this.height / 3);
+                ctx.lineTo(-this.width / 4, 0);
+                ctx.lineTo(0, this.height / 4);
+                ctx.lineTo(this.width / 4, 0);
+                ctx.closePath();
+                ctx.fillStyle = '#1E40AF';
+                ctx.fill();
+                
+                // 绘制驾驶舱
+                ctx.beginPath();
+                ctx.arc(0, -this.height / 6, this.width / 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#93C5FD';
+                ctx.fill();
+                
+                // 绘制护盾（如果激活）
+                if (this.isShielded) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.width / 1.5 + 10, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(96, 165, 250, ${this.shieldTimeRemaining % 1 > 0.5 ? 0.8 : 0.5})`;
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+                
+                // 绘制跟踪子弹激活效果
+                if (this.hasTracker) {
+                    ctx.beginPath();
+                    ctx.arc(0, -this.height / 2, this.width / 3, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(139, 92, 246, 0.5)`;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+            },
+            move(dx, dy) {
+                this.x += dx;
+                this.y += dy;
+                
+                // 边界检查
+                if (this.x < this.width / 2) this.x = this.width / 2;
+                if (this.x > canvas.width - this.width / 2) this.x = canvas.width - this.width / 2;
+                if (this.y < this.height / 2) this.y = this.height / 2;
+                if (this.y > canvas.height - this.height / 2) this.y = canvas.height - this.height / 2;
+            },
+            shoot() {
+                if (this.hasTripleShot) {
+                    // 三向子弹
+                    if (this.hasTracker) {
+                        // 带跟踪的三向子弹
+                        this.createTrackingBullet(this.x, this.y - this.height / 2, -Math.PI / 2);
+                        this.createTrackingBullet(this.x, this.y - this.height / 2, -Math.PI / 2 - Math.PI / 12);
+                        this.createTrackingBullet(this.x, this.y - this.height / 2, -Math.PI / 2 + Math.PI / 12);
+                    } else {
+                        // 普通三向子弹
+                        this.bullets.push({
+                            x: this.x,
+                            y: this.y - this.height / 2,
+                            width: this.bulletSize,
+                            height: this.bulletSize,
+                            speed: this.bulletSpeed,
+                            angle: -Math.PI / 2,
+                            type: 'normal'
+                        });
+                        this.bullets.push({
+                            x: this.x,
+                            y: this.y - this.height / 2,
+                            width: this.bulletSize,
+                            height: this.bulletSize,
+                            speed: this.bulletSpeed,
+                            angle: -Math.PI / 2 - Math.PI / 12,
+                            type: 'normal'
+                        });
+                        this.bullets.push({
+                            x: this.x,
+                            y: this.y - this.height / 2,
+                            width: this.bulletSize,
+                            height: this.bulletSize,
+                            speed: this.bulletSpeed,
+                            angle: -Math.PI / 2 + Math.PI / 12,
+                            type: 'normal'
+                        });
+                    }
+                } else if (this.hasTracker) {
+                    // 跟踪子弹
+                    this.createTrackingBullet(this.x, this.y - this.height / 2, -Math.PI / 2);
+                } else {
+                    // 普通子弹
+                    this.bullets.push({
+                        x: this.x,
+                        y: this.y - this.height / 2,
+                        width: this.bulletSize,
+                        height: this.bulletSize,
+                        speed: this.bulletSpeed,
+                        angle: -Math.PI / 2,
+                        type: 'normal'
+                    });
+                }
+            },
+            // 创建跟踪子弹
+            createTrackingBullet(x, y, angle) {
+                this.bullets.push({
+                    x: x,
+                    y: y,
+                    width: this.bulletSize,
+                    height: this.bulletSize,
+                    speed: this.bulletSpeed,
+                    angle: angle,
+                    type: 'tracking',
+                    target: null
+                });
+            },
+            // 发射导弹 - 修复版，确保导弹立即显示并流畅更新
+            launchMissile() {
+                if (missiles > 0) {
+                    missiles--;
+                    document.getElementById('missiles').textContent = missiles;
+                    
+                    // 创建新导弹，确保有唯一标识和初始状态
+                    const newMissile = {
+                        id: Date.now(), // 唯一ID便于追踪
+                        x: this.x,
+                        y: this.y - this.height / 2,
+                        width: this.missileSize,
+                        height: this.missileSize * 2,
+                        speed: this.missileSpeed,
+                        angle: -Math.PI / 2,
+                        trail: [],
+                        frameCount: 0 // 帧计数器，确保每帧都更新
+                    };
+                    
+                    // 立即添加到导弹列表
+                    this.missiles.push(newMissile);
+                    
+                    // 强制立即绘制，确保用户操作有即时反馈
+                    this.drawMissileImmediately(newMissile);
+                }
+            },
+            // 立即绘制导弹，确保用户操作后立即看到效果
+            drawMissileImmediately(missile) {
+                if (!gamePaused && gameRunning) {
+                    // 绘制导弹尾迹
+                    if (missile.trail.length === 0) {
+                        missile.trail.push({x: missile.x, y: missile.y});
+                    }
+                    
+                    // 绘制尾迹
+                    ctx.beginPath();
+                    for (let j = 0; j < missile.trail.length; j++) {
+                        const point = missile.trail[j];
+                        if (j === 0) {
+                            ctx.moveTo(point.x, point.y);
+                        } else {
+                            ctx.lineTo(point.x, point.y);
+                        }
+                    }
+                    ctx.strokeStyle = 'rgba(16, 185, 129, 0.6)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    
+                    // 绘制导弹
+                    ctx.save();
+                    ctx.translate(missile.x, missile.y);
+                    ctx.rotate(missile.angle + Math.PI / 2);
+                    
+                    ctx.fillStyle = this.missileColor;
+                    ctx.fillRect(-missile.width/2, -missile.height/2, missile.width, missile.height);
+                    
+                    // 导弹头部
+                    ctx.beginPath();
+                    ctx.moveTo(0, -missile.height/2);
+                    ctx.lineTo(-missile.width/2, missile.height/4);
+                    ctx.lineTo(missile.width/2, missile.height/4);
+                    ctx.closePath();
+                    ctx.fillStyle = '#10B981';
+                    ctx.fill();
+                    
+                    // 导弹尾焰
+                    ctx.beginPath();
+                    ctx.moveTo(-missile.width/4, missile.height/2);
+                    ctx.lineTo(0, missile.height/2 + missile.height/3);
+                    ctx.lineTo(missile.width/4, missile.height/2);
+                    ctx.closePath();
+                    ctx.fillStyle = '#F59E0B';
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+            },
+            // 召唤友军
+            summonAllies() {
+                if (antennas > 0) {
+                    antennas--;
+                    document.getElementById('antennas').textContent = antennas;
+                    
+                    // 在玩家左右两侧各召唤一架友军
+                    allies.spawn(this.x - 100, this.y - 100);
+                    allies.spawn(this.x + 100, this.y - 100);
+                }
+            },
+            updateBullets() {
+                // 更新普通子弹和跟踪子弹
+                for (let i = this.bullets.length - 1; i >= 0; i--) {
+                    const bullet = this.bullets[i];
+                    
+                    // 跟踪子弹逻辑
+                    if (bullet.type === 'tracking') {
+                        // 寻找目标
+                        if (!bullet.target || !enemies.list.includes(bullet.target)) {
+                            // 寻找最近的敌机
+                            let closestEnemy = null;
+                            let closestDistance = Infinity;
+                            
+                            for (const enemy of enemies.list) {
+                                const distX = enemy.x + enemy.width/2 - bullet.x;
+                                const distY = enemy.y + enemy.height/2 - bullet.y;
+                                const distance = Math.sqrt(distX * distX + distY * distY);
+                                
+                                if (distance < closestDistance && enemy.y < canvas.height) {
+                                    closestDistance = distance;
+                                    closestEnemy = enemy;
+                                }
+                            }
+                            
+                            bullet.target = closestEnemy;
+                        }
+                        
+                        // 跟踪目标
+                        if (bullet.target) {
+                            const targetX = bullet.target.x + bullet.target.width/2;
+                            const targetY = bullet.target.y + bullet.target.height/2;
+                            const angleToTarget = Math.atan2(targetY - bullet.y, targetX - bullet.x);
+                            
+                            // 逐渐转向目标
+                            bullet.angle += (angleToTarget - bullet.angle) * 0.1;
+                        }
+                    }
+                    
+                    // 更新子弹位置
+                    bullet.x += Math.cos(bullet.angle) * bullet.speed;
+                    bullet.y += Math.sin(bullet.angle) * bullet.speed;
+                    
+                    // 移除超出画布的子弹
+                    if (bullet.y < 0 || bullet.x < 0 || bullet.x > canvas.width || bullet.y > canvas.height) {
+                        this.bullets.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // 绘制子弹
+                    ctx.beginPath();
+                    ctx.arc(bullet.x, bullet.y, bullet.width / 2, 0, Math.PI * 2);
+                    ctx.fillStyle = bullet.type === 'tracking' ? this.trackerColor : this.bulletColor;
+                    ctx.fill();
+                    
+                    // 添加发光效果
+                    ctx.beginPath();
+                    ctx.arc(bullet.x, bullet.y, bullet.width / 2 + 5, 0, Math.PI * 2);
+                    const glowColor = bullet.type === 'tracking' ? 'rgba(139, 92, 246, 0.3)' : 'rgba(251, 191, 36, 0.3)';
+                    ctx.fillStyle = glowColor;
+                    ctx.fill();
+                    
+                    // 跟踪子弹添加尾迹
+                    if (bullet.type === 'tracking') {
+                        ctx.beginPath();
+                        ctx.moveTo(bullet.x, bullet.y);
+                        ctx.lineTo(
+                            bullet.x - Math.cos(bullet.angle) * bullet.width * 2,
+                            bullet.y - Math.sin(bullet.angle) * bullet.width * 2
+                        );
+                        ctx.strokeStyle = this.trackerColor;
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                }
+                
+                // 更新导弹 - 完全修复，确保每帧都更新
+                for (let i = this.missiles.length - 1; i >= 0; i--) {
+                    const missile = this.missiles[i];
+                    
+                    // 强制增加帧计数，确保每帧都处理
+                    missile.frameCount++;
+                    
+                    // 确保导弹始终移动，不受其他因素干扰
+                    missile.x += Math.cos(missile.angle) * missile.speed;
+                    missile.y += Math.sin(missile.angle) * missile.speed;
+                    
+                    // 添加尾迹，每帧都添加新点
+                    missile.trail.push({x: missile.x, y: missile.y});
+                    // 限制尾迹长度，保持性能
+                    if (missile.trail.length > 10) {
+                        missile.trail.shift();
+                    }
+                    
+                    // 检查导弹是否与敌机直接碰撞（修复核心）
+                    let collided = false;
+                    for (let j = enemies.list.length - 1; j >= 0; j--) {
+                        const enemy = enemies.list[j];
+                        // 计算导弹与敌机的碰撞
+                        if (missile.x > enemy.x && missile.x < enemy.x + enemy.width &&
+                            missile.y > enemy.y && missile.y < enemy.y + enemy.height) {
+                            
+                            // 直接触发爆炸
+                            enemies.triggerMissileExplosion(missile);
+                            this.missiles.splice(i, 1);
+                            collided = true;
+                            break;
+                        }
+                    }
+                    
+                    if (collided) continue;
+                    
+                    // 移除超出画布的导弹
+                    if (missile.y < -50 || missile.x < -50 || missile.x > canvas.width + 50 || missile.y > canvas.height + 50) {
+                        // 导弹出界也会爆炸
+                        enemies.triggerMissileExplosion(missile);
+                        this.missiles.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // 导弹跟踪逻辑 - 每3帧更新一次方向
+                    if (missile.frameCount % 3 === 0) {
+                        // 寻找最近的敌机
+                        let closestEnemy = null;
+                        let closestDistance = Infinity;
+                        
+                        for (const enemy of enemies.list) {
+                            const distX = enemy.x + enemy.width/2 - missile.x;
+                            const distY = enemy.y + enemy.height/2 - missile.y;
+                            const distance = Math.sqrt(distX * distX + distY * distY);
+                            
+                            if (distance < closestDistance && distance < 400) {
+                                closestDistance = distance;
+                                closestEnemy = enemy;
+                            }
+                        }
+                        
+                        // 跟踪目标
+                        if (closestEnemy) {
+                            const targetX = closestEnemy.x + closestEnemy.width/2;
+                            const targetY = closestEnemy.y + closestEnemy.height/2;
+                            const angleToTarget = Math.atan2(targetY - missile.y, targetX - missile.x);
+                            
+                            // 逐渐转向目标，确保平滑跟踪
+                            missile.angle += (angleToTarget - missile.angle) * 0.15;
+                        }
+                    }
+                    
+                    // 绘制导弹尾迹
+                    ctx.beginPath();
+                    for (let j = 0; j < missile.trail.length; j++) {
+                        const point = missile.trail[j];
+                        if (j === 0) {
+                            ctx.moveTo(point.x, point.y);
+                        } else {
+                            ctx.lineTo(point.x, point.y);
+                        }
+                    }
+                    ctx.strokeStyle = 'rgba(16, 185, 129, 0.6)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    
+                    // 绘制导弹
+                    ctx.save();
+                    ctx.translate(missile.x, missile.y);
+                    ctx.rotate(missile.angle + Math.PI / 2);
+                    
+                    ctx.fillStyle = this.missileColor;
+                    ctx.fillRect(-missile.width/2, -missile.height/2, missile.width, missile.height);
+                    
+                    // 导弹头部
+                    ctx.beginPath();
+                    ctx.moveTo(0, -missile.height/2);
+                    ctx.lineTo(-missile.width/2, missile.height/4);
+                    ctx.lineTo(missile.width/2, missile.height/4);
+                    ctx.closePath();
+                    ctx.fillStyle = '#10B981';
+                    ctx.fill();
+                    
+                    // 导弹尾焰动画
+                    const flameSize = 1 + Math.sin(missile.frameCount * 0.3) * 0.3;
+                    ctx.beginPath();
+                    ctx.moveTo(-missile.width/4, missile.height/2);
+                    ctx.lineTo(0, missile.height/2 + missile.height/3 * flameSize);
+                    ctx.lineTo(missile.width/4, missile.height/2);
+                    ctx.closePath();
+                    ctx.fillStyle = '#F59E0B';
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+            },
+            updatePowerups() {
+                // 更新三向子弹状态
+                if (this.hasTripleShot) {
+                    this.tripleShotTimeRemaining -= 1/60;
+                    document.getElementById('tripleShotTimer').textContent = Math.ceil(this.tripleShotTimeRemaining);
+                    
+                    if (this.tripleShotTimeRemaining <= 0) {
+                        this.hasTripleShot = false;
+                        document.getElementById('tripleShotIndicator').classList.add('hidden');
+                    }
+                }
+                
+                // 更新跟踪子弹状态
+                if (this.hasTracker) {
+                    this.trackerTimeRemaining -= 1/60;
+                    document.getElementById('trackerTimer').textContent = Math.ceil(this.trackerTimeRemaining);
+                    
+                    if (this.trackerTimeRemaining <= 0) {
+                        this.hasTracker = false;
+                        document.getElementById('trackerIndicator').classList.add('hidden');
+                    }
+                }
+                
+                // 更新护盾状态
+                if (this.isShielded) {
+                    this.shieldTimeRemaining -= 1/60;
+                    
+                    if (this.shieldTimeRemaining <= 0) {
+                        this.isShielded = false;
+                        document.getElementById('shieldIndicator').classList.add('hidden');
+                    }
+                }
+                
+                // 更新通讯干扰状态
+                if (this.jammerActive) {
+                    this.jammerTimeRemaining -= 1/60;
+                    
+                    if (this.jammerTimeRemaining <= 0) {
+                        this.jammerActive = false;
+                        // 恢复敌机正常行为
+                        for (const enemy of enemies.list) {
+                            enemy.jammed = false;
+                        }
+                    }
+                }
+                
+                // 更新铝箔冷却时间
+                if (this.chaffCooldown > 0) {
+                    this.chaffCooldown--;
+                }
+                
+                // 更新干扰器冷却时间
+                if (this.jammerCooldown > 0) {
+                    this.jammerCooldown--;
+                }
+            },
+            // 释放铝箔
+            releaseChaff() {
+                if (this.chaffCooldown <= 0) {
+                    // 生成新的铝箔对象
+                    const chaffId = Date.now();
+                    this.chaff.push({
+                        id: chaffId,
+                        x: this.x,
+                        y: this.y,
+                        radius: 5,
+                        maxRadius: 180,
+                        alpha: 1,
+                        windX: wind.x * 3,
+                        windY: wind.y * 2,
+                        frameCount: 0,
+                        maxFrames: 60
+                    });
+                    this.chaffCooldown = this.maxChaffCooldown;
+                    
+                    // 立即绘制铝箔
+                    this.drawChaffImmediately(this.chaff[this.chaff.length - 1]);
+                }
+            },
+            // 立即绘制铝箔
+            drawChaffImmediately(chaff) {
+                if (!gamePaused && gameRunning) {
+                    ctx.beginPath();
+                    ctx.arc(chaff.x, chaff.y, chaff.radius, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(200, 200, 200, ${chaff.alpha})`;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    // 内部效果
+                    ctx.beginPath();
+                    ctx.arc(chaff.x, chaff.y, chaff.radius * 0.8, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(220, 220, 220, ${chaff.alpha * 0.7})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            },
+            // 更新铝箔效果
+            updateChaff() {
+                for (let i = this.chaff.length - 1; i >= 0; i--) {
+                    const chaff = this.chaff[i];
+                    
+                    chaff.frameCount++;
+                    const progress = chaff.frameCount / chaff.maxFrames;
+                    chaff.radius = 5 + progress * (chaff.maxRadius - 5);
+                    chaff.alpha = 1 - progress;
+                    
+                    chaff.x += chaff.windX;
+                    chaff.y += chaff.windY;
+                    
+                    if (chaff.alpha <= 0 || chaff.frameCount >= chaff.maxFrames) {
+                        this.chaff.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // 绘制铝箔
+                    ctx.beginPath();
+                    ctx.arc(chaff.x, chaff.y, chaff.radius, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(200, 200, 200, ${chaff.alpha})`;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    // 内部效果
+                    ctx.beginPath();
+                    ctx.arc(chaff.x, chaff.y, chaff.radius * 0.8, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(220, 220, 220, ${chaff.alpha * 0.7})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    
+                    // 铝箔碎片
+                    const fragmentCount = Math.floor(progress * 12) + 4;
+                    for (let j = 0; j < fragmentCount; j++) {
+                        const angle = (j / fragmentCount) * Math.PI * 2 + chaff.frameCount * 0.05;
+                        const fragmentDistance = chaff.radius * (0.3 + Math.random() * 0.7);
+                        const fragmentX = chaff.x + Math.cos(angle) * fragmentDistance;
+                        const fragmentY = chaff.y + Math.sin(angle) * fragmentDistance;
+                        
+                        ctx.beginPath();
+                        ctx.arc(fragmentX, fragmentY, 2, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(200, 200, 200, ${chaff.alpha})`;
+                        ctx.fill();
+                    }
+                }
+            },
+            // 激活通讯干扰
+            activateJammer() {
+                if (this.jammerCooldown <= 0) {
+                    this.jammerActive = true;
+                    this.jammerTimeRemaining = this.jammerDuration;
+                    this.jammerCooldown = this.maxJammerCooldown;
+                    
+                    // 干扰所有敌机
+                    for (const enemy of enemies.list) {
+                        enemy.jammed = true;
+                        enemy.jamStartTime = Date.now();
+                        enemy.jamDuration = 2000 + Math.random() * 1000; // 2-3秒
+                        
+                        // 随机决定干扰效果：反向飞行或追击玩家
+                        enemy.jamBehavior = Math.random() > 0.5 ? 'reverse' : 'pursuit';
+                    }
+                }
+            }
+        };
+        
+        // 敌机管理
+        const enemies = {
+            list: [],
+            spawnRate: 120, // 每多少帧生成一个敌机
+            spawnTimer: 0,
+            speed: 2,
+            minSize: 30,
+            maxSize: 50,
+            color: '#EF4444',
+            spawn() {
+                if (this.spawnTimer < this.spawnRate) {
+                    this.spawnTimer++;
+                    return;
+                }
+                
+                this.spawnTimer = 0;
+                
+                // 随机生成敌机
+                const size = Math.random() * (this.maxSize - this.minSize) + this.minSize;
+                this.list.push({
+                    x: Math.random() * (canvas.width - size),
+                    y: -size,
+                    width: size,
+                    height: size,
+                    baseSpeed: this.speed * (0.8 + Math.random() * 0.4),
+                    speed: this.speed * (0.8 + Math.random() * 0.4),
+                    health: Math.ceil(size / 20),
+                    points: Math.ceil(size / 10),
+                    engineHealth: 2, // 发动机生命值
+                    isEngineDamaged: false,
+                    jammed: false,
+                    jamBehavior: 'reverse',
+                    jamStartTime: 0,
+                    jamDuration: 0,
+                    originalDirectionX: (Math.random() - 0.5) * 0.5, // 随机水平移动
+                    dropAntenna: Math.random() < 0.1 // 10%概率掉落天线
+                });
+            },
+            update() {
+                for (let i = this.list.length - 1; i >= 0; i--) {
+                    const enemy = this.list[i];
+                    
+                    // 检查干扰状态是否结束
+                    if (enemy.jammed && Date.now() - enemy.jamStartTime > enemy.jamDuration) {
+                        enemy.jammed = false;
+                        enemy.speed = enemy.baseSpeed;
+                    }
+                    
+                    // 干扰状态下的行为
+                    if (enemy.jammed) {
+                        if (enemy.jamBehavior === 'reverse') {
+                            // 反向飞行
+                            enemy.y -= enemy.speed * 0.7;
+                        } else {
+                            // 追击玩家
+                            const dx = player.x - (enemy.x + enemy.width/2);
+                            const angle = Math.atan2(-50, dx); // 偏向玩家但仍有向下的趋势
+                            enemy.x += Math.cos(angle) * enemy.speed * 0.8;
+                            enemy.y += Math.sin(angle) * enemy.speed * 0.8;
+                        }
+                    } else {
+                        // 正常飞行行为，带一些水平随机移动
+                        enemy.x += enemy.originalDirectionX;
+                        enemy.y += enemy.speed;
+                        
+                        // 边界反弹
+                        if (enemy.x <= 0 || enemy.x + enemy.width >= canvas.width) {
+                            enemy.originalDirectionX *= -1;
+                        }
+                    }
+                    
+                    // 发动机受损时的效果
+                    if (enemy.isEngineDamaged) {
+                        // 随机晃动
+                        enemy.x += (Math.random() - 0.5) * 2;
+                        // 速度降低
+                        enemy.speed = enemy.baseSpeed * 0.6;
+                        
+                        // 绘制黑烟
+                        for (let j = 0; j < 2; j++) {
+                            const smokeX = enemy.x + enemy.width * (0.25 + Math.random() * 0.5);
+                            const smokeY = enemy.y + enemy.height + Math.random() * 10;
+                            const smokeSize = 3 + Math.random() * 4;
+                            
+                            ctx.beginPath();
+                            ctx.arc(smokeX, smokeY, smokeSize, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(50, 50, 50, ${0.5 + Math.random() * 0.3})`;
+                            ctx.fill();
+                        }
+                    }
+                    
+                    // 移除超出画布的敌机
+                    if (enemy.y > canvas.height + enemy.height || enemy.y < -enemy.height * 2) {
+                        this.list.splice(i, 1);
+                        if (enemy.y > canvas.height && !enemy.jammed) {
+                            lives--;
+                            updateGameStats();
+                        }
+                        continue;
+                    }
+                    
+                    // 绘制敌机
+                    ctx.fillStyle = enemy.jammed ? '#EC4899' : this.color;
+                    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                    
+                    // 添加窗户
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(enemy.x + enemy.width / 4, enemy.y + enemy.height / 4, enemy.width / 2, enemy.height / 3);
+                    
+                    // 添加引擎
+                    ctx.fillStyle = enemy.isEngineDamaged ? '#6B7280' : '#991B1B';
+                    ctx.fillRect(enemy.x, enemy.y + enemy.height, enemy.width / 4, enemy.height / 4);
+                    ctx.fillRect(enemy.x + enemy.width * 3/4, enemy.y + enemy.height, enemy.width / 4, enemy.height / 4);
+                    
+                    // 引擎火焰
+                    if (!enemy.isEngineDamaged) {
+                        ctx.fillStyle = '#F59E0B';
+                        ctx.beginPath();
+                        ctx.moveTo(enemy.x + enemy.width / 8, enemy.y + enemy.height + enemy.height / 4);
+                        ctx.lineTo(enemy.x, enemy.y + enemy.height + enemy.height / 2);
+                        ctx.lineTo(enemy.x + enemy.width / 4, enemy.y + enemy.height + enemy.height / 2);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(enemy.x + enemy.width * 7/8, enemy.y + enemy.height + enemy.height / 4);
+                        ctx.lineTo(enemy.x + enemy.width * 3/4, enemy.y + enemy.height + enemy.height / 2);
+                        ctx.lineTo(enemy.x + enemy.width, enemy.y + enemy.height + enemy.height / 2);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    
+                    // 干扰状态指示
+                    if (enemy.jammed) {
+                        ctx.beginPath();
+                        ctx.arc(enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2 + 5, 0, Math.PI * 2);
+                        ctx.strokeStyle = `rgba(236, 72, 153, ${0.5 + Math.sin(Date.now() * 0.005) * 0.2})`;
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                    
+                    // 显示天线携带指示
+                    if (enemy.dropAntenna) {
+                        ctx.fillStyle = '#22D3EE';
+                        ctx.beginPath();
+                        ctx.moveTo(enemy.x + enemy.width, enemy.y + enemy.height/3);
+                        ctx.lineTo(enemy.x + enemy.width + 10, enemy.y + enemy.height/3 - 5);
+                        ctx.lineTo(enemy.x + enemy.width + 10, enemy.y + enemy.height/3 + 5);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        ctx.beginPath();
+                        ctx.arc(enemy.x + enemy.width + 10, enemy.y + enemy.height/3, 3, 0, Math.PI * 2);
+                        ctx.fillStyle = '#fff';
+                        ctx.fill();
+                    }
+                }
+            },
+            checkCollision(bullet) {
+                for (let i = this.list.length - 1; i >= 0; i--) {
+                    const enemy = this.list[i];
+                    
+                    // 检查子弹是否击中敌机
+                    if (bullet.x > enemy.x && bullet.x < enemy.x + enemy.width &&
+                        bullet.y > enemy.y && bullet.y < enemy.y + enemy.height) {
+                        
+                        // 减少敌机生命值
+                        enemy.health--;
+                        
+                        // 如果是导弹，直接爆炸
+                        if (bullet.type === 'missile') {
+                            return true;
+                        }
+                        
+                        // 如果敌机生命值为0，则摧毁
+                        if (enemy.health <= 0) {
+                            this.destroyEnemy(enemy, i);
+                            return true;
+                        }
+                        
+                        return true;
+                    }
+                }
+                return false;
+            },
+            // 导弹爆炸效果 - 重命名并改进
+            triggerMissileExplosion(missile) {
+                const explosionRadius = 60;
+                let hitCount = 0;
+                
+                // 创建爆炸效果
+                explosions.list.push({
+                    x: missile.x,
+                    y: missile.y,
+                    size: 10,
+                    maxSize: explosionRadius * 1.5,
+                    alpha: 1,
+                    type: 'missile'
+                });
+                
+                // 飞溅伤害
+                for (let i = this.list.length - 1; i >= 0; i--) {
+                    const enemy = this.list[i];
+                    
+                    // 计算距离（改进的碰撞检测）
+                    const enemyCenterX = enemy.x + enemy.width / 2;
+                    const enemyCenterY = enemy.y + enemy.height / 2;
+                    const distX = Math.abs(enemyCenterX - missile.x);
+                    const distY = Math.abs(enemyCenterY - missile.y);
+                    const distance = Math.sqrt(distX * distX + distY * distY);
+                    
+                    // 在爆炸范围内
+                    if (distance < explosionRadius) {
+                        // 根据距离计算伤害
+                        const damage = Math.ceil(enemy.health * (1 - distance / explosionRadius));
+                        enemy.health -= damage;
+                        
+                        if (enemy.health <= 0) {
+                            this.destroyEnemy(enemy, i);
+                            hitCount++;
+                        } else {
+                            // 爆炸冲击效果
+                            const pushForce = (1 - distance / explosionRadius) * 3;
+                            const angle = Math.atan2(enemy.y - missile.y, enemy.x - missile.x);
+                            enemy.x += Math.cos(angle) * pushForce;
+                            enemy.y += Math.sin(angle) * pushForce;
+                            
+                            // 显示受击效果
+                            explosions.list.push({
+                                x: enemy.x + enemy.width / 2,
+                                y: enemy.y + enemy.height / 2,
+                                size: 5,
+                                maxSize: 20,
+                                alpha: 0.7
+                            });
+                        }
+                    }
+                }
+                
+                // 增加分数
+                if (hitCount > 0) {
+                    score += hitCount * 10; // 每击中一个敌机加10分
+                    updateGameStats();
+                }
+                
+                return hitCount > 0;
+            },
+            // 铝箔击中敌机，损坏发动机
+            checkChaffCollision(chaffs) {
+                for (let i = this.list.length - 1; i >= 0; i--) {
+                    const enemy = this.list[i];
+                    
+                    for (let j = chaffs.length - 1; j >= 0; j--) {
+                        const chaff = chaffs[j];
+                        
+                        // 计算敌机和铝箔之间的距离
+                        const distX = Math.abs((enemy.x + enemy.width / 2) - chaff.x);
+                        const distY = Math.abs((enemy.y + enemy.height / 2) - chaff.y);
+                        const distance = Math.sqrt(distX * distX + distY * distY);
+                        
+                        // 如果距离小于铝箔半径，则被铝箔影响
+                        if (distance < chaff.radius) {
+                            // 损坏发动机
+                            enemy.engineHealth--;
+                            if (enemy.engineHealth <= 0) {
+                                enemy.isEngineDamaged = true;
+                            }
+                            
+                            // 铝箔对敌人造成少量伤害
+                            enemy.health--;
+                            if (enemy.health <= 0) {
+                                this.destroyEnemy(enemy, i);
+                                break;
+                            }
+                            
+                            // 铝箔击中效果
+                            explosions.list.push({
+                                x: enemy.x + enemy.width / 2,
+                                y: enemy.y + enemy.height / 2,
+                                size: 10,
+                                maxSize: 30,
+                                alpha: 0.7
+                            });
+                        }
+                    }
+                }
+            },
+            checkPlayerCollision(player) {
+                for (let i = this.list.length - 1; i >= 0; i--) {
+                    const enemy = this.list[i];
+                    
+                    // 计算玩家和敌机之间的距离
+                    const distX = Math.abs(player.x - (enemy.x + enemy.width / 2));
+                    const distY = Math.abs(player.y - (enemy.y + enemy.height / 2));
+                    
+                    // 如果距离小于两者的半径之和，则发生碰撞
+                    if (distX < (player.width / 2 + enemy.width / 2) && 
+                        distY < (player.height / 2 + enemy.height / 2)) {
+                        
+                        // 添加爆炸效果
+                        explosions.list.push({
+                            x: enemy.x + enemy.width / 2,
+                            y: enemy.y + enemy.height / 2,
+                            size: enemy.width,
+                            maxSize: enemy.width * 2,
+                            alpha: 1
+                        });
+                        
+                        this.list.splice(i, 1);
+                        
+                        // 如果玩家有护盾，则消耗护盾
+                        if (player.isShielded) {
+                            player.isShielded = false;
+                            document.getElementById('shieldIndicator').classList.add('hidden');
+                            return false;
+                        }
+                        
+                        // 否则减少生命值
+                        lives--;
+                        updateGameStats();
+                        return true;
+                    }
+                }
+                return false;
+            },
+            // 摧毁敌机并处理分数和效果
+            destroyEnemy(enemy, index) {
+                // 添加爆炸效果
+                explosions.list.push({
+                    x: enemy.x + enemy.width / 2,
+                    y: enemy.y + enemy.height / 2,
+                    size: enemy.width,
+                    maxSize: enemy.width * 2,
+                    alpha: 1
+                });
+                
+                // 增加分数
+                score += enemy.points;
+                updateGameStats();
+                
+                // 如果敌机携带天线，则掉落天线道具
+                if (enemy.dropAntenna) {
+                    powerups.spawn(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, 4);
+                }
+                // 其他道具掉落
+                else if (Math.random() < 0.25) {
+                    // 0-三向子弹，1-护盾，2-跟踪子弹，3-导弹补给
+                    const type = Math.floor(Math.random() * 4);
+                    powerups.spawn(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, type);
+                }
+                
+                this.list.splice(index, 1);
+            },
+            clear() {
+                this.list = [];
+                this.spawnTimer = 0;
+            }
+        };
+        
+        // 爆炸效果管理
+        const explosions = {
+            list: [],
+            update() {
+                for (let i = this.list.length - 1; i >= 0; i--) {
+                    const explosion = this.list[i];
+                    
+                    // 更新爆炸效果
+                    explosion.size += explosion.type === 'missile' ? 3 : 1;
+                    explosion.alpha -= explosion.type === 'missile' ? 0.05 : 0.03;
+                    
+                    // 移除消失的爆炸效果
+                    if (explosion.alpha <= 0) {
+                        this.list.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // 绘制爆炸效果
+                    ctx.beginPath();
+                    ctx.arc(explosion.x, explosion.y, explosion.size, 0, Math.PI * 2);
+                    const color = explosion.type === 'missile' ? 
+                        `rgba(16, 185, 129, ${explosion.alpha})` : 
+                        `rgba(249, 115, 22, ${explosion.alpha})`;
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = explosion.type === 'missile' ? 5 : 3;
+                    ctx.stroke();
+                    
+                    // 内部光圈
+                    ctx.beginPath();
+                    ctx.arc(explosion.x, explosion.y, explosion.size / 2, 0, Math.PI * 2);
+                    const innerColor = explosion.type === 'missile' ? 
+                        `rgba(34, 211, 238, ${explosion.alpha * 0.7})` : 
+                        `rgba(245, 158, 11, ${explosion.alpha * 0.7})`;
+                    ctx.fillStyle = innerColor;
+                    ctx.fill();
+                    
+                    // 导弹爆炸额外效果
+                    if (explosion.type === 'missile') {
+                        // 碎片效果
+                        for (let j = 0; j < 8; j++) {
+                            const angle = (j / 8) * Math.PI * 2 + explosion.size * 0.05;
+                            const fragmentDistance = explosion.size * 0.7;
+                            const fragmentX = explosion.x + Math.cos(angle) * fragmentDistance;
+                            const fragmentY = explosion.y + Math.sin(angle) * fragmentDistance;
+                            
+                            ctx.beginPath();
+                            ctx.arc(fragmentX, fragmentY, 3, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(16, 185, 129, ${explosion.alpha * 0.5})`;
+                            ctx.fill();
+                        }
+                    }
+                }
+            },
+            clear() {
+                this.list = [];
+            }
+        };
+        
+        // 道具管理
+        const powerups = {
+            list: [],
+            speed: 2,
+            spawn(x, y, type) {
+                this.list.push({
+                    x: x,
+                    y: y,
+                    width: 25,
+                    height: 25,
+                    speed: this.speed,
+                    type: type,
+                    // 0: 三向子弹, 1: 护盾, 2: 跟踪子弹, 3: 导弹补给, 4: 天线
+                    color: type === 0 ? '#EF4444' : 
+                           type === 1 ? '#60A5FA' : 
+                           type === 2 ? '#8B5CF6' : 
+                           type === 3 ? '#10B981' : '#22D3EE'
+                });
+            },
+            update() {
+                for (let i = this.list.length - 1; i >= 0; i--) {
+                    const powerup = this.list[i];
+                    
+                    // 更新道具位置，受风的轻微影响
+                    powerup.y += powerup.speed + wind.y;
+                    powerup.x += wind.x;
+                    
+                    // 移除超出画布的道具
+                    if (powerup.y > canvas.height || powerup.x < 0 || powerup.x > canvas.width) {
+                        this.list.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // 绘制道具
+                    ctx.fillStyle = powerup.color;
+                    
+                    if (powerup.type === 0) {
+                        // 三向子弹道具（三角形）
+                        ctx.beginPath();
+                        ctx.moveTo(powerup.x, powerup.y - powerup.height / 2);
+                        ctx.lineTo(powerup.x - powerup.width / 2, powerup.y + powerup.height / 2);
+                        ctx.lineTo(powerup.x + powerup.width / 2, powerup.y + powerup.height / 2);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // 添加子弹图标
+                        ctx.fillStyle = '#FBBF24';
+                        ctx.fillRect(powerup.x - 2, powerup.y - 10, 4, 8);
+                        ctx.fillRect(powerup.x - 8, powerup.y - 5, 4, 8);
+                        ctx.fillRect(powerup.x + 4, powerup.y - 5, 4, 8);
+                    } else if (powerup.type === 1) {
+                        // 护盾道具（圆形）
+                        ctx.beginPath();
+                        ctx.arc(powerup.x, powerup.y, powerup.width / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 添加护盾图标
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(powerup.x, powerup.y, powerup.width / 3, 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else if (powerup.type === 2) {
+                        // 跟踪子弹道具（菱形）
+                        ctx.beginPath();
+                        ctx.moveTo(powerup.x, powerup.y - powerup.height / 2);
+                        ctx.lineTo(powerup.x + powerup.width / 2, powerup.y);
+                        ctx.lineTo(powerup.x, powerup.y + powerup.height / 2);
+                        ctx.lineTo(powerup.x - powerup.width / 2, powerup.y);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // 添加跟踪图标
+                        ctx.fillStyle = '#fff';
+                        ctx.beginPath();
+                        ctx.arc(powerup.x, powerup.y, powerup.width / 6, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(powerup.x, powerup.y, powerup.width / 3, 0, Math.PI * 2);
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    } else if (powerup.type === 3) {
+                        // 导弹补给（矩形）
+                        ctx.fillRect(powerup.x - powerup.width / 2, powerup.y - powerup.height / 2, 
+                                    powerup.width, powerup.height);
+                        
+                        // 添加导弹图标
+                        ctx.fillStyle = '#fff';
+                        ctx.beginPath();
+                        ctx.moveTo(powerup.x, powerup.y - powerup.height / 3);
+                        ctx.lineTo(powerup.x - powerup.width / 6, powerup.y + powerup.height / 3);
+                        ctx.lineTo(powerup.x + powerup.width / 6, powerup.y + powerup.height / 3);
+                        ctx.closePath();
+                        ctx.fill();
+                    } else {
+                        // 天线道具
+                        ctx.fillStyle = powerup.color;
+                        ctx.beginPath();
+                        ctx.moveTo(powerup.x, powerup.y - powerup.height / 2);
+                        ctx.lineTo(powerup.x + powerup.width / 2, powerup.y);
+                        ctx.lineTo(powerup.x, powerup.y + powerup.height / 2);
+                        ctx.lineTo(powerup.x - powerup.width / 2, powerup.y);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // 天线图标
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(powerup.x, powerup.y - powerup.height / 3);
+                        ctx.lineTo(powerup.x, powerup.y + powerup.height / 3);
+                        ctx.moveTo(powerup.x - powerup.width / 3, powerup.y);
+                        ctx.lineTo(powerup.x + powerup.width / 3, powerup.y);
+                        ctx.stroke();
+                        
+                        ctx.fillStyle = '#fff';
+                        ctx.beginPath();
+                        ctx.arc(powerup.x, powerup.y, powerup.width / 8, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // 添加发光效果
+                    ctx.beginPath();
+                    ctx.arc(powerup.x, powerup.y, powerup.width / 2 + 5, 0, Math.PI * 2);
+                    ctx.fillStyle = `${powerup.color}33`;
+                    ctx.fill();
+                }
+            },
+            checkCollision(player) {
+                for (let i = this.list.length - 1; i >= 0; i--) {
+                    const powerup = this.list[i];
+                    
+                    // 计算玩家和道具之间的距离
+                    const distX = Math.abs(player.x - powerup.x);
+                    const distY = Math.abs(player.y - powerup.y);
+                    
+                    // 如果距离小于两者的半径之和，则发生碰撞
+                    if (distX < (player.width / 3 + powerup.width / 2) && 
+                        distY < (player.height / 3 + powerup.height / 2)) {
+                        
+                        // 应用道具效果
+                        if (powerup.type === 0) {
+                            // 三向子弹
+                            player.hasTripleShot = true;
+                            player.tripleShotTimeRemaining = 5;
+                            document.getElementById('tripleShotIndicator').classList.remove('hidden');
+                        } else if (powerup.type === 1) {
+                            // 护盾
+                            player.isShielded = true;
+                            player.shieldTimeRemaining = Infinity; // 直到被击中
+                            document.getElementById('shieldIndicator').classList.remove('hidden');
+                        } else if (powerup.type === 2) {
+                            // 跟踪子弹
+                            player.hasTracker = true;
+                            player.trackerTimeRemaining = 7; // 持续7秒
+                            document.getElementById('trackerIndicator').classList.remove('hidden');
+                        } else if (powerup.type === 3) {
+                            // 导弹补给
+                            missiles = Math.min(5, missiles + 2);
+                            document.getElementById('missiles').textContent = missiles;
+                        } else if (powerup.type === 4) {
+                            // 天线道具
+                            antennas++;
+                            document.getElementById('antennas').textContent = antennas;
+                        }
+                        
+                        this.list.splice(i, 1);
+                        return true;
+                    }
+                }
+                return false;
+            },
+            clear() {
+                this.list = [];
+            }
+        };
+        
+        // 游戏控制
+        const keys = {
+            up: false,
+            down: false,
+            left: false,
+            right: false,
+            space: false,
+            b: false,
+            n: false,
+            m: false,
+            c: false
+        };
+        
+        // 更新游戏统计信息
+        function updateGameStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = lives;
+            document.getElementById('level').textContent = level;
+            document.getElementById('missiles').textContent = missiles;
+            document.getElementById('antennas').textContent = antennas;
+            
+            // 更新铝箔冷却显示
+            const chaffIndicator = document.getElementById('chaffIndicator');
+            const chaffCooldown = document.getElementById('chaffCooldown');
+            
+            if (player.chaffCooldown > 0) {
+                chaffIndicator.classList.remove('hidden');
+                chaffCooldown.textContent = Math.ceil(player.chaffCooldown / 60);
+            } else {
+                chaffIndicator.classList.add('hidden');
+            }
+            
+            // 更新干扰器冷却显示
+            const jammerIndicator = document.getElementById('jammerIndicator');
+            const jammerCooldown = document.getElementById('jammerCooldown');
+            
+            if (player.jammerCooldown > 0) {
+                jammerIndicator.classList.remove('hidden');
+                jammerCooldown.textContent = Math.ceil(player.jammerCooldown / 60);
+            } else {
+                jammerIndicator.classList.add('hidden');
+            }
+            
+            // 检查关卡提升
+            const newLevel = Math.floor(score / 100) + 1;
+            if (newLevel > level) {
+                level = newLevel;
+                enemies.speed = 2 + (level - 1) * 0.5;
+                enemies.spawnRate = Math.max(40, 120 - (level - 1) * 10);
+            }
+            
+            // 检查游戏是否结束
+            if (lives <= 0) {
+                endGame();
+            }
+        }
+        
+        // 开始游戏
+        function startGame() {
+            // 重置游戏状态
+            score = 0;
+            lives = 3;
+            level = 1;
+            missiles = 3;
+            antennas = 0;
+            player.x = canvas.width / 2;
+            player.y = canvas.height - 80;
+            player.isShielded = false;
+            player.hasTripleShot = false;
+            player.hasTracker = false;
+            player.bullets = [];
+            player.chaff = [];
+            player.chaffCooldown = 0;
+            player.jammerActive = false;
+            player.jammerCooldown = 0;
+            player.missiles = [];
+            
+            // 清空敌机、爆炸、道具和友军
+            enemies.clear();
+            explosions.clear();
+            powerups.clear();
+            allies.clear();
+            
+            // 更新游戏统计
+            updateGameStats();
+            
+            // 隐藏开始界面
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            
+            // 开始游戏循环
+            gameRunning = true;
+            gamePaused = false;
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 结束游戏
+        function endGame() {
+            gameRunning = false;
+            
+            // 显示游戏结束界面
+            document.getElementById('finalScore').textContent = `分数: ${score}`;
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+        }
+        
+        // 暂停游戏
+        function pauseGame() {
+            if (!gameRunning) return;
+            
+            gamePaused = !gamePaused;
+            
+            if (gamePaused) {
+                document.getElementById('pauseScreen').classList.remove('hidden');
+            } else {
+                document.getElementById('pauseScreen').classList.add('hidden');
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        // 游戏主循环 - 确保每帧都处理导弹
+        function gameLoop(timestamp) {
+            if (!gameRunning || gamePaused) return;
+            
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 更新风效果
+            wind.update();
+            
+            // 绘制风力指示
+            if (Math.abs(wind.x) > 0.3 || Math.abs(wind.y) > 0.15) {
+                ctx.beginPath();
+                ctx.moveTo(50, 50);
+                ctx.lineTo(50 + wind.x * 30, 50 + wind.y * 30);
+                ctx.strokeStyle = 'rgba(200, 200, 200, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.arc(50 + wind.x * 30, 50 + wind.y * 30, 5, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(200, 200, 200, 0.5)';
+                ctx.fill();
+            }
+            
+            // 生成敌机
+            enemies.spawn();
+            
+            // 更新玩家
+            player.draw();
+            player.updatePowerups();
+            
+            // 优先更新子弹和导弹，确保它们流畅显示
+            player.updateBullets();
+            
+            // 更新铝箔
+            player.updateChaff();
+            
+            // 更新友军
+            allies.update();
+            
+            // 处理玩家移动
+            if (keys.left) player.move(-player.speed, 0);
+            if (keys.right) player.move(player.speed, 0);
+            if (keys.up) player.move(0, -player.speed);
+            if (keys.down) player.move(0, player.speed);
+            
+            // 处理射击（空格键）
+            if (keys.space) {
+                player.shoot();
+                keys.space = false; // 防止连续射击
+            }
+            
+            // 处理铝箔释放（B键）
+            if (keys.b) {
+                player.releaseChaff();
+                keys.b = false;
+            }
+            
+            // 处理通讯干扰（N键）
+            if (keys.n) {
+                player.activateJammer();
+                keys.n = false;
+            }
+            
+            // 处理导弹发射（M键）
+            if (keys.m) {
+                player.launchMissile();
+                keys.m = false;
+            }
+            
+            // 处理友军召唤（C键）
+            if (keys.c) {
+                player.summonAllies();
+                keys.c = false;
+            }
+            
+            // 更新敌机
+            enemies.update();
+            
+            // 更新爆炸效果
+            explosions.update();
+            
+            // 更新道具
+            powerups.update();
+            
+            // 检查子弹与敌机的碰撞
+            for (let i = player.bullets.length - 1; i >= 0; i--) {
+                const bullet = player.bullets[i];
+                if (enemies.checkCollision(bullet)) {
+                    player.bullets.splice(i, 1);
+                }
+            }
+            
+            // 检查铝箔与敌机的碰撞
+            enemies.checkChaffCollision(player.chaff);
+            
+            // 检查玩家与敌机的碰撞
+            enemies.checkPlayerCollision(player);
+            
+            // 检查玩家与道具的碰撞
+            powerups.checkCollision(player);
+            
+            // 继续游戏循环 - 确保导弹每帧都更新
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 事件监听
+        document.getElementById('startButton').addEventListener('click', startGame);
+        document.getElementById('restartButton').addEventListener('click', startGame);
+        document.getElementById('pauseButton').addEventListener('click', pauseGame);
+        document.getElementById('resumeButton').addEventListener('click', pauseGame);
+        
+        // 键盘事件监听
+        window.addEventListener('keydown', (e) => {
+            // 阻止空格键的默认行为（页面滚动）
+            if (e.key === ' ') e.preventDefault();
+            
+            if (e.key === 'ArrowUp') keys.up = true;
+            if (e.key === 'ArrowDown') keys.down = true;
+            if (e.key === 'ArrowLeft') keys.left = true;
+            if (e.key === 'ArrowRight') keys.right = true;
+            if (e.key === ' ') {
+                keys.space = true;
+            }
+            // 按B键释放铝箔
+            if (e.key === 'b' || e.key === 'B') {
+                if (!keys.b) {
+                    keys.b = true;
+                }
+            }
+            // 按N键激活通讯干扰
+            if (e.key === 'n' || e.key === 'N') {
+                if (!keys.n) {
+                    keys.n = true;
+                }
+            }
+            // 按M键发射导弹
+            if (e.key === 'm' || e.key === 'M') {
+                if (!keys.m) {
+                    keys.m = true;
+                }
+            }
+            // 按C键召唤友军
+            if (e.key === 'c' || e.key === 'C') {
+                if (!keys.c) {
+                    keys.c = true;
+                }
+            }
+            
+            // 按P键暂停/继续游戏
+            if (e.key === 'p' || e.key === 'P') {
+                pauseGame();
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowUp') keys.up = false;
+            if (e.key === 'ArrowDown') keys.down = false;
+            if (e.key === 'ArrowLeft') keys.left = false;
+            if (e.key === 'ArrowRight') keys.right = false;
+            if (e.key === ' ') keys.space = false;
+            if (e.key === 'b' || e.key === 'B') keys.b = false;
+            if (e.key === 'n' || e.key === 'N') keys.n = false;
+            if (e.key === 'm' || e.key === 'M') keys.m = false;
+            if (e.key === 'c' || e.key === 'C') keys.c = false;
+        });
+        
+        // 窗口大小调整时保持Canvas居中
+        window.addEventListener('resize', () => {
+            const container = canvas.parentElement;
+            container.style.width = '100%';
+            container.style.height = '100%';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+            container.style.justifyContent = 'center';
+        });
+        
+        // 初始化Canvas位置
+        window.dispatchEvent(new Event('resize'));
+    </script>
+</body>
+</html>
+    
