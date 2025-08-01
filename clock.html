@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学时钟</title>
+    <!-- 引入MathJax官方CDN -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: white; /* 背景改为白色 */
+            font-family: Arial, sans-serif;
+        }
+        
+        .clock-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+        
+        .clock-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border: 8px solid #333;
+        }
+        
+        /* 刻度线 */
+        .tick {
+            position: absolute;
+            width: 3px;
+            height: 15px;
+            background: #333;
+            left: 50%;
+            top: 20px;
+            margin-left: -1.5px;
+            transform-origin: 50% 180px;
+        }
+        
+        /* 数学标签容器 */
+        .math-label-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 数学标签 */
+        .math-label {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            color: #333;
+            margin-left: -40px;
+            margin-top: -40px;
+        }
+        
+        /* 指针通用样式 */
+        .hand {
+            position: absolute;
+            left: 50%;
+            bottom: 50%;
+            transform-origin: 50% 100%;
+            z-index: 2;
+        }
+        
+        .hour-hand {
+            width: 6px;
+            height: 80px;
+            background: #3498db;
+            margin-left: -3px;
+            border-radius: 4px;
+        }
+        
+        .minute-hand {
+            width: 4px;
+            height: 120px;
+            background: #e74c3c;
+            margin-left: -2px;
+            border-radius: 4px;
+        }
+        
+        .second-hand {
+            width: 2px;
+            height: 140px;
+            background: #2ecc71;
+            margin-left: -1px;
+            border-radius: 4px;
+            z-index: 3;
+        }
+        
+        /* 中心点 */
+        .center-circle {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #333;
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="clock-container">
+        <div class="clock-face">
+            <!-- 刻度线 -->
+            <div id="ticks"></div>
+            
+            <!-- 数学标签 -->
+            <div class="math-label-container" id="mathLabels"></div>
+            
+            <!-- 指针 -->
+            <div class="hand hour-hand" id="hourHand"></div>
+            <div class="hand minute-hand" id="minuteHand"></div>
+            <div class="hand second-hand" id="secondHand"></div>
+            
+            <!-- 中心点 -->
+            <div class="center-circle"></div>
+        </div>
+    </div>
+
+    <script>
+        // 数学表达式数组（1-12点）
+        const mathExpressions = [
+            String.raw`\( \lim_{x\to 0} \frac{\sin(12x)}{x} \)`,  // 12点
+            String.raw`\( -e^{i\pi} \)`,                  // 1点
+            String.raw`\( \int_{0}^{2} dx \)`,               // 2点
+            String.raw`\( \sqrt{9} \)`,                      // 3点
+            String.raw`\( \frac{d}{dx}(4x) \)`,              // 4点
+            String.raw`\( \sum_{k=1}^{5} 1 \)`,              // 5点
+            String.raw`\( 3! \)`,                            // 6点
+            String.raw`\( \int_{0}^{\pi} \frac{7}{\pi} x \sin(x) \, dx = 7 \)`,  // 7点
+            String.raw`\( 2^{3} \)`,                         // 8点
+            String.raw`\( \binom{3}{2} \times 3 \)`,         // 9点
+            String.raw`\( \int_{0}^{1} 10x e^{x} \, dx = 10 \)`,  // 10点
+            String.raw`\( \lfloor e^{3} \rfloor - 9 = 11 \)`    // 11点
+        ];
+        
+        // 初始化刻度线
+        const ticksContainer = document.getElementById('ticks');
+        for (let i = 0; i < 12; i++) {
+            const tick = document.createElement('div');
+            tick.className = 'tick';
+            tick.style.transform = `rotate(${i * 30}deg)`;
+            ticksContainer.appendChild(tick);
+        }
+        
+        // 初始化数学标签（精确位置计算）
+        const mathLabelsContainer = document.getElementById('mathLabels');
+        const radius = 145; // 标签距离中心的距离
+        const centerX = 200; // 时钟中心X坐标
+        const centerY = 200; // 时钟中心Y坐标
+        
+        for (let i = 0; i < 12; i++) {
+            const angle = (i * 30 - 90) * Math.PI / 180; // 转换为弧度，12点在顶部
+            const x = centerX + radius * Math.cos(angle);
+            const y = centerY + radius * Math.sin(angle);
+            
+            const label = document.createElement('div');
+            label.className = 'math-label';
+            label.style.left = `${x}px`;
+            label.style.top = `${y}px`;
+            label.innerHTML = mathExpressions[i];
+            mathLabelsContainer.appendChild(label);
+        }
+        
+        // 更新时钟函数
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours() % 12;
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            
+            // 计算指针角度（精确到小数点后2位）
+            const hourAngle = (hours * 30) + (minutes * 0.5);
+            const minuteAngle = minutes * 6;
+            const secondAngle = seconds * 6;
+            
+            // 应用旋转
+            document.getElementById('hourHand').style.transform = 
+                `translateX(-50%) rotate(${hourAngle.toFixed(2)}deg)`;
+            document.getElementById('minuteHand').style.transform = 
+                `translateX(-50%) rotate(${minuteAngle.toFixed(2)}deg)`;
+            document.getElementById('secondHand').style.transform = 
+                `translateX(-50%) rotate(${secondAngle.toFixed(2)}deg)`;
+            
+            // 重新渲染MathJax
+            if (typeof MathJax !== 'undefined') {
+                MathJax.typesetPromise().catch(err => console.log('渲染错误:', err));
+            }
+        }
+
+        // 初始更新
+        updateClock();
+        
+        // 每秒更新
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
