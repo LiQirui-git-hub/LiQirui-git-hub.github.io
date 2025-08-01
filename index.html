@@ -15,6 +15,7 @@
                     colors: {
                         primary: '#333333',
                         secondary: '#666666',
+                        accent: '#4F46E5',
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -48,67 +49,90 @@
             .nav-link:hover::after {
                 width: 100%;
             }
+            .page-transition {
+                opacity: 0;
+                transform: scale(0.95);
+                transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                            transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .page-visible {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50 text-primary min-h-screen flex flex flex-col p-6 transition-all duration-500">
-    <!-- 导航栏 -->
-    <header class="w-full max-w-4xl mx-auto py-6">
-        <nav class="flex flex-wrap justify-center gap-x-8 gap-y-2 text-secondary">
-            <a href="" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">HOME</a>
-            <a href="blog.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">BLOG</a>
-            <a href="luogu.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">LUOGU Problem Solution</a>
-            <a href="resources.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">Resources</a>
-        </nav>
-    </header>
+<body class="bg-gray-50 text-primary min-h-screen flex flex-col p-6 overflow-x-hidden">
+    <!-- 主页面容器 -->
+    <div id="main-content" class="page-transition page-visible transition-all duration-700">
+        <!-- 导航栏 -->
+        <header class="w-full max-w-4xl mx-auto py-6">
+            <nav class="flex flex-wrap justify-center gap-x-8 gap-y-2 text-secondary">
+                <a href="" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">HOME</a>
+                <a href="blog.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">BLOG</a>
+                <a href="luogu.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">LUOGU Problem Solution</a>
+                <a href="resources.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">Resources</a>
+            </nav>
+        </header>
 
-    <!-- 主容器 -->
-    <div class="max-w-2xl w-full mx-auto flex flex-10 flex flex-col items-center space-y-10 flex-grow justify-center">
-
-        <!-- 名字部分 -->
-        <div class="text-center">
-            <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-light tracking-tight transition-all duration-300 hover:tracking-wide">
-                Li Qirui
-            </h1>
-            <div class="w-20 h-0.5 bg-primary mx-auto mt-4 transition-all duration-300 hover:w-32"></div>
-        </div>
-
-        <!-- 关于部分 -->
-        <div class="text-center text-secondary text-lg md:text-xl font-light">
-            <p class="text-balance">热衷于编程与技术探索</p>
-        </div>
-
-        <!-- 技能部分 -->
-        <div class="w-full">
-            <h2 class="text-sm uppercase tracking-widest text-secondary mb-6 text-center">编程语言</h2>
-            <div class="flex flex-wrap justify-center gap-4 md:gap-8">
-                <div class="flex items-center space-x-2 transition-transform duration-300 hover:scale-105">
-                    <i class="fa fa-code text-primary"></i>
-                    <span class="text-lg">C++</span>
+        <!-- 主容器 -->
+        <div class="max-w-2xl w-full mx-auto flex-1 flex flex-col items-center justify-center py-12">
+            <!-- 个人信息部分 - 居中显示 -->
+            <div class="w-full text-center mb-16">
+                <!-- 名字部分 -->
+                <div class="mb-8">
+                    <h1 class="text-[clamp(2.5rem,8vw,4.5rem)] font-light tracking-tight transition-all duration-300 hover:tracking-wide">
+                        Li Qirui
+                    </h1>
+                    <div class="w-24 h-0.5 bg-primary mx-auto mt-4 transition-all duration-500 hover:w-36"></div>
                 </div>
-                <div class="flex items-center space-x-2 transition-transform duration-300 hover:scale-105">
-                    <i class="fa fa-python text-primary"></i>
-                    <span class="text-lg">Python</span>
+
+                <!-- 关于部分 - 居中显示 -->
+                <div class="text-secondary text-lg md:text-xl font-light max-w-lg mx-auto">
+                    <p class="text-balance">热衷于编程与技术探索</p>
                 </div>
             </div>
-        </div>
 
-        <!-- 底部链接 -->
-        <div class="mt-auto pt-8 border-t border-gray-200 w-full flex justify-center space-x-6">
-            <a href="LiQirui-git-hub_GH.html" class="text-secondary hover:text-primary transition-colors duration-300">
-                <i class="fa fa-github text-xl"></i>
-            </a>
-            <a href="LiQirui-git-hub_LE.html" class="text-secondary hover:text-primary transition-colors duration-300">
-                <i class="fa fa-linkedin text-xl"></i>
-            </a>
-            <a href="LiQirui-git-hub_EEL.html" class="text-secondary hover:text-primary transition-colors duration-300">
-                <i class="fa fa-envelope text-xl"></i>
-            </a>
-        </div>
+            <!-- 技能部分 -->
+            <div class="w-full mb-16">
+                <h2 class="text-sm uppercase tracking-widest text-secondary mb-6 text-center">编程语言</h2>
+                <div class="flex flex-wrap justify-center gap-6 md:gap-10">
+                    <div class="flex items-center space-x-2 transition-transform duration-300 hover:scale-105">
+                        <i class="fa fa-code text-primary text-xl"></i>
+                        <span class="text-lg">C++</span>
+                    </div>
+                    <div class="flex items-center space-x-2 transition-transform duration-300 hover:scale-105">
+                        <i class="fa fa-python text-primary text-xl"></i>
+                        <span class="text-lg">Python</span>
+                    </div>
+                </div>
+            </div>
 
-        <!-- 版权信息 -->
-        <div class="text-xs text-gray-400 mt-4">
-            &copy; <span id="currentYear"></span> Li Qirui. All rights reserved.
+            <!-- 底部链接 -->
+            <div class="mt-auto pt-8 border-t border-gray-200 w-full flex justify-center space-x-8">
+                <a href="LiQirui-git-hub_GH.html" class="text-secondary hover:text-primary transition-colors duration-300">
+                    <i class="fa fa-github text-xl"></i>
+                </a>
+                <a href="LiQirui-git-hub_LE.html" class="text-secondary hover:text-primary transition-colors duration-300">
+                    <i class="fa fa-linkedin text-xl"></i>
+                </a>
+                <a href="LiQirui-git-hub_EEL.html" class="text-secondary hover:text-primary transition-colors duration-300">
+                    <i class="fa fa-envelope text-xl"></i>
+                </a>
+            </div>
+
+            <!-- 版权信息 -->
+            <div class="text-xs text-gray-400 mt-6">
+                &copy; <span id="currentYear"></span> Li Qirui. All rights reserved.
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载过渡层 -->
+    <div id="transition-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500">
+        <div class="text-white text-center">
+            <div class="w-16 h-16 border-4 border-white border-t-accent rounded-full animate-spin mx-auto mb-4"></div>
+            <p>正在加载游戏...</p>
         </div>
     </div>
 
@@ -116,10 +140,65 @@
         // 设置当前年份
         document.getElementById('currentYear').textContent = new Date().getFullYear();
 
-        // 添加页面加载动画
+        // 二进制序列监听功能
+        const targetSequence = "01000111010000010100110101000101"; // "GAME"的二进制表示
+        let currentSequence = "";
+        const maxSequenceLength = targetSequence.length;
+
+        // 监听键盘输入
+        document.addEventListener('keydown', (e) => {
+            // 只监听0和1的输入
+            if (e.key === '0' || e.key === '1') {
+                currentSequence += e.key;
+                
+                // 保持当前序列长度不超过目标序列长度
+                if (currentSequence.length > maxSequenceLength) {
+                    currentSequence = currentSequence.slice(1);
+                }
+                
+                // 检查是否匹配目标序列
+                if (currentSequence === targetSequence) {
+                    navigateToGame();
+                    resetSequence();
+                }
+            } else {
+                // 输入其他键时重置序列
+                resetSequence();
+            }
+        });
+
+        // 重置序列
+        function resetSequence() {
+            currentSequence = "";
+        }
+
+        // 导航到游戏页面，带有平滑过渡
+        function navigateToGame() {
+            const mainContent = document.getElementById('main-content');
+            const transitionOverlay = document.getElementById('transition-overlay');
+            
+            // 开始主内容淡出动画
+            mainContent.classList.remove('page-visible');
+            
+            // 显示过渡层
+            setTimeout(() => {
+                transitionOverlay.classList.remove('opacity-0', 'pointer-events-none');
+                transitionOverlay.classList.add('opacity-100', 'pointer-events-auto');
+                
+                // 短暂延迟后跳转到游戏页面
+                // 这里假设游戏页面地址为 game.html，你可以替换为实际的URL
+                setTimeout(() => {
+                    window.location.href = 'game/01.html';
+                }, 800);
+            }, 500);
+        }
+
+        // 页面加载时的入场动画
         document.addEventListener('DOMContentLoaded', () => {
-            document.body.classList.add('opacity-100');
-            document.body.classList.remove('opacity-0');
+            // 确保页面元素已加载
+            setTimeout(() => {
+                document.getElementById('main-content').classList.add('page-visible');
+            }, 100);
         });
     </script>
 </body>
