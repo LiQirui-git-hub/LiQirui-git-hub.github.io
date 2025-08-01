@@ -54,12 +54,12 @@
             <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-game text-primary text-shadow mb-8">飞机射击游戏</h1>
             <p class="text-white text-lg mb-6 max-w-md text-center px-4">
                 方向键: 移动<br>
-                空格键: 发射子弹<br>
+                空格键: 手动发射（可选）<br>
                 B键: 释放铝箔<br>
                 N键: 通讯干扰<br>
                 M键: 发射导弹<br>
                 C键: 召唤友军 (需要天线)<br>
-                收集道具提升能力，击落敌机获取分数
+                自动发射已启用，收集道具提升能力
             </p>
             <button id="startButton" class="bg-primary hover:bg-primary/80 text-white font-bold py-3 px-8 rounded transition-all transform hover:scale-105 active:scale-95 font-game">
                 开始游戏
@@ -369,6 +369,10 @@
             bulletSize: 10,
             bulletColor: '#FBBF24',
             trackerColor: '#8B5CF6',
+            // 自动发射相关属性
+            autoFire: true,          // 启用自动发射
+            fireRate: 15,            // 射击间隔（帧），数值越小射速越快
+            fireTimer: 0,            // 射击计时器
             // 铝箔相关属性
             chaff: [],
             chaffCooldown: 0,
@@ -510,13 +514,23 @@
                     target: null
                 });
             },
-            // 发射导弹 - 修复版，确保导弹立即显示并流畅更新
+            // 自动发射控制
+            updateAutoFire() {
+                if (this.autoFire) {
+                    this.fireTimer++;
+                    if (this.fireTimer >= this.fireRate) {
+                        this.fireTimer = 0;
+                        this.shoot();
+                    }
+                }
+            },
+            // 发射导弹
             launchMissile() {
                 if (missiles > 0) {
                     missiles--;
                     document.getElementById('missiles').textContent = missiles;
                     
-                    // 创建新导弹，确保有唯一标识和初始状态
+                    // 创建新导弹
                     const newMissile = {
                         id: Date.now(), // 唯一ID便于追踪
                         x: this.x,
@@ -526,20 +540,16 @@
                         speed: this.missileSpeed,
                         angle: -Math.PI / 2,
                         trail: [],
-                        frameCount: 0 // 帧计数器，确保每帧都更新
+                        frameCount: 0
                     };
                     
-                    // 立即添加到导弹列表
                     this.missiles.push(newMissile);
-                    
-                    // 强制立即绘制，确保用户操作有即时反馈
                     this.drawMissileImmediately(newMissile);
                 }
             },
-            // 立即绘制导弹，确保用户操作后立即看到效果
+            // 立即绘制导弹
             drawMissileImmediately(missile) {
                 if (!gamePaused && gameRunning) {
-                    // 绘制导弹尾迹
                     if (missile.trail.length === 0) {
                         missile.trail.push({x: missile.x, y: missile.y});
                     }
@@ -673,33 +683,28 @@
                     }
                 }
                 
-                // 更新导弹 - 完全修复，确保每帧都更新
+                // 更新导弹
                 for (let i = this.missiles.length - 1; i >= 0; i--) {
                     const missile = this.missiles[i];
                     
-                    // 强制增加帧计数，确保每帧都处理
                     missile.frameCount++;
                     
-                    // 确保导弹始终移动，不受其他因素干扰
                     missile.x += Math.cos(missile.angle) * missile.speed;
                     missile.y += Math.sin(missile.angle) * missile.speed;
                     
-                    // 添加尾迹，每帧都添加新点
+                    // 添加尾迹
                     missile.trail.push({x: missile.x, y: missile.y});
-                    // 限制尾迹长度，保持性能
                     if (missile.trail.length > 10) {
                         missile.trail.shift();
                     }
                     
-                    // 检查导弹是否与敌机直接碰撞（修复核心）
+                    // 检查导弹是否与敌机直接碰撞
                     let collided = false;
                     for (let j = enemies.list.length - 1; j >= 0; j--) {
                         const enemy = enemies.list[j];
-                        // 计算导弹与敌机的碰撞
                         if (missile.x > enemy.x && missile.x < enemy.x + enemy.width &&
                             missile.y > enemy.y && missile.y < enemy.y + enemy.height) {
                             
-                            // 直接触发爆炸
                             enemies.triggerMissileExplosion(missile);
                             this.missiles.splice(i, 1);
                             collided = true;
@@ -711,15 +716,13 @@
                     
                     // 移除超出画布的导弹
                     if (missile.y < -50 || missile.x < -50 || missile.x > canvas.width + 50 || missile.y > canvas.height + 50) {
-                        // 导弹出界也会爆炸
                         enemies.triggerMissileExplosion(missile);
                         this.missiles.splice(i, 1);
                         continue;
                     }
                     
-                    // 导弹跟踪逻辑 - 每3帧更新一次方向
+                    // 导弹跟踪逻辑
                     if (missile.frameCount % 3 === 0) {
-                        // 寻找最近的敌机
                         let closestEnemy = null;
                         let closestDistance = Infinity;
                         
@@ -740,7 +743,6 @@
                             const targetY = closestEnemy.y + closestEnemy.height/2;
                             const angleToTarget = Math.atan2(targetY - missile.y, targetX - missile.x);
                             
-                            // 逐渐转向目标，确保平滑跟踪
                             missile.angle += (angleToTarget - missile.angle) * 0.15;
                         }
                     }
@@ -864,7 +866,6 @@
                     });
                     this.chaffCooldown = this.maxChaffCooldown;
                     
-                    // 立即绘制铝箔
                     this.drawChaffImmediately(this.chaff[this.chaff.length - 1]);
                 }
             },
@@ -1137,7 +1138,8 @@
                 }
                 return false;
             },
-            // 导弹爆炸效果 - 重命名并改进
+            // 导弹爆炸效果
+            // 导弹爆炸效果
             triggerMissileExplosion(missile) {
                 const explosionRadius = 60;
                 let hitCount = 0;
@@ -1156,7 +1158,7 @@
                 for (let i = this.list.length - 1; i >= 0; i--) {
                     const enemy = this.list[i];
                     
-                    // 计算距离（改进的碰撞检测）
+                    // 计算距离
                     const enemyCenterX = enemy.x + enemy.width / 2;
                     const enemyCenterY = enemy.y + enemy.height / 2;
                     const distX = Math.abs(enemyCenterX - missile.x);
@@ -1623,6 +1625,8 @@
             player.jammerActive = false;
             player.jammerCooldown = 0;
             player.missiles = [];
+            // 重置自动发射计时器
+            player.fireTimer = 0;
             
             // 清空敌机、爆炸、道具和友军
             enemies.clear();
@@ -1666,7 +1670,7 @@
             }
         }
         
-        // 游戏主循环 - 确保每帧都处理导弹
+        // 游戏主循环
         function gameLoop(timestamp) {
             if (!gameRunning || gamePaused) return;
             
@@ -1698,7 +1702,10 @@
             player.draw();
             player.updatePowerups();
             
-            // 优先更新子弹和导弹，确保它们流畅显示
+            // 自动发射控制（核心新增功能）
+            player.updateAutoFire();
+            
+            // 更新子弹和导弹
             player.updateBullets();
             
             // 更新铝箔
@@ -1713,10 +1720,10 @@
             if (keys.up) player.move(0, -player.speed);
             if (keys.down) player.move(0, player.speed);
             
-            // 处理射击（空格键）
+            // 处理手动射击（空格键）- 保留手动发射功能
             if (keys.space) {
                 player.shoot();
-                keys.space = false; // 防止连续射击
+                keys.space = false;
             }
             
             // 处理铝箔释放（B键）
@@ -1769,7 +1776,7 @@
             // 检查玩家与道具的碰撞
             powerups.checkCollision(player);
             
-            // 继续游戏循环 - 确保导弹每帧都更新
+            // 继续游戏循环
             requestAnimationFrame(gameLoop);
         }
         
