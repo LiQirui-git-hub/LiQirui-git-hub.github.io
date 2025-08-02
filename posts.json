@@ -1,9 +1,9 @@
 [
   {
     "slug": "blog/welcome.html",
-    "title": "欢迎",
+    "title": "Markdown语法完全指南与最佳实践",
     "date": "2025-07-31",
-    "category": "Welcome",
+    "category": "Markdown",
     "coverImage": "https://picsum.photos/id/0/600/400",
     "contentFile": "blog/welcome.html"
   }
