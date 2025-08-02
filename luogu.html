@@ -65,15 +65,33 @@
             }
         }
     </style>
+    <style>
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: &#x27;&#x27;;
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -2px;
+            left: 0;
+            background-color: #333333;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 text-primary min-h-screen">
     <!-- 加载完整导航栏 -->
     <header class="w-full max-w-4xl mx-auto py-6">
         <nav class="flex flex-wrap justify-center gap-x-8 gap-y-2 text-secondary">
-            <a href="" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">HOME</a>
+            <a href="index.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">HOME</a>
             <a href="blog.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">BLOG</a>
             <a href="luogu.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">LUOGU Problem Solution</a>
-            <a href="resources.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">Resources</a>
+            <a href="resources.html" class="nav-link text-lg font-light transition-colors duration-300 text-primary">Resources</a>
         </nav>
     </header>
     <div id="header-placeholder"></div>
