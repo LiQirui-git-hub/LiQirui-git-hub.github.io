@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/github.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net.net/npm/highlight.js@11.7.0/lib/highlight.min.js"></script>
     
     <!-- Tailwind 配置 -->
     <script>
@@ -54,7 +54,7 @@
                 @apply text-xs px-2 py-0.5 rounded-full;
             }
             .difficulty-badge {
-                @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+                @apply inline-flex inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
             }
             .nav-link.active {
                 color: #333;
@@ -65,12 +65,14 @@
             }
         }
     </style>
+
+    <!-- 导航栏下划线动画样式 -->
     <style>
         .nav-link {
             position: relative;
         }
         .nav-link::after {
-            content: &#x27;&#x27;;
+            content: '';
             position: absolute;
             width: 0;
             height: 1px;
@@ -85,12 +87,12 @@
     </style>
 </head>
 <body class="bg-gray-50 text-primary min-h-screen">
-    <!-- 加载完整导航栏 -->
+    <!-- 导航栏 -->
     <header class="w-full max-w-4xl mx-auto py-6">
         <nav class="flex flex-wrap justify-center gap-x-8 gap-y-2 text-secondary">
             <a href="index.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">HOME</a>
             <a href="blog.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">BLOG</a>
-            <a href="luogu.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">LUOGU Problem Solution</a>
+            <a href="luogu.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary active">LUOGU Problem Solution</a>
             <a href="resources.html" class="nav-link text-lg font-light transition-colors duration-300 text-primary">Resources</a>
         </nav>
     </header>
@@ -450,3 +452,4 @@
     </script>
 </body>
 </html>
+    
