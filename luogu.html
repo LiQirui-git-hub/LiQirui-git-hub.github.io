@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LUOGU 题解 - Li Qirui</title>
+    <title>洛谷题解 - Li Qirui</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -19,9 +19,13 @@
                         primary: '#333333',
                         secondary: '#666666',
                         difficulty: {
-                            easy: '#4CAF50',
-                            medium: '#FFC107',
-                            hard: '#F44336'
+                            '入门': '#4CAF50',
+                            '普及-': '#8BC34A',
+                            '普及/提高-': '#CDDC39',
+                            '普及+/提高': '#FFC107',
+                            '提高+/省选-': '#FF9800',
+                            '省选/NOI-': '#F44336',
+                            'NOI/NOI+/CTSC': '#222222'
                         }
                     },
                     fontFamily: {
@@ -41,10 +45,16 @@
             }
             .solution-card:hover {
                 transform: translateY(-3px);
-                box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.08);
+                box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.1);
+            }
+            .solution-card.high-difficulty {
+                border-left: 3px solid var(--difficulty-color);
             }
             .tag {
                 @apply text-xs px-2 py-0.5 rounded-full;
+            }
+            .difficulty-badge {
+                @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
             }
             .nav-link.active {
                 color: #333;
@@ -57,7 +67,7 @@
     </style>
 </head>
 <body class="bg-gray-50 text-primary min-h-screen">
-    <!-- 加载入统一一标题栏 -->
+    <!-- 加载完整导航栏 -->
     <div id="header-placeholder"></div>
     <script>
         $('#header-placeholder').load('/header.html', function() {
@@ -70,29 +80,58 @@
     <main class="max-w-4xl w-full mx-auto flex-grow py-12 px-4">
         <div class="mb-16 text-center">
             <h1 class="text-[clamp(2rem,5vw,3rem)] font-light">洛谷题解</h1>
-            <div class="w-20 h-0.5 bg-primary-primary mx-auto mt-4"></div>
+            <div class="w-20 h-0.5 bg-primary mx-auto mt-4"></div>
             <p class="text-secondary mt-6 max-w-2xl mx-auto">
-                算法竞赛题解与分析，包含C++实现代码、解题思路和复杂度分析
+                算法竞赛题解与分析，按难度分级展示，包含详细解题思路与代码实现
             </p>
         </div>
         
+        <!-- 难度说明卡片 -->
+        <div class="bg-white p-4 rounded-lg shadow-sm mb-8">
+            <div class="flex items-center justify-between">
+                <h3 class="font-medium">难度分级说明</h3>
+                <span class="text-xs text-secondary">分值越高难度越大</span>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2">
+                <span class="difficulty-badge" style="background-color: rgba(76, 175, 80, 0.1); color: rgb(76, 175, 80);">入门 - 1分</span>
+                <span class="difficulty-badge" style="background-color: rgba(139, 195, 74, 0.1); color: rgb(139, 195, 74);">普及- - 10分</span>
+                <span class="difficulty-badge" style="background-color: rgba(205, 220, 57, 0.1); color: rgb(205, 220, 57);">普及/提高- - 15分</span>
+                <span class="difficulty-badge" style="background-color: rgba(255, 193, 7, 0.1); color: rgb(255, 193, 7);">普及+/提高 - 25分</span>
+                <span class="difficulty-badge" style="background-color: rgba(255, 152, 0, 0.1); color: rgb(255, 152, 0);">提高+/省选- - 40分</span>
+                <span class="difficulty-badge" style="background-color: rgba(244, 67, 54, 0.1); color: rgb(244, 67, 54);">省选/NOI- - 55分</span>
+                <span class="difficulty-badge" style="background-color: rgba(34, 34, 34, 0.1); color: rgb(34, 34, 34);">NOI/NOI+/CTSC - 100分</span>
+            </div>
+        </div>
+        
         <!-- 筛选区 -->
-        <div class="bg-white p-4 rounded-lg shadow-sm mb-10">
+        <div class="bg-white p-4 rounded-lg shadow shadow-sm mb-10">
             <div class="flex flex-wrap gap-4 items-center">
                 <div class="w-full md:w-auto">
                     <label class="text-sm text-secondary mr-2">难度筛选：</label>
-                    <div class="inline-flex rounded-md shadow-sm" role="group">
-                        <button type="button" class="difficulty-btn px-4 py-2 text-sm bg-primary text-white rounded hover:bg-opacity-90 rounded-l-lg" data-difficulty="all">
-                            全部
+                    <div class="inline-flex flex-wrap md:flex-nowrap rounded-md shadow-sm" role="group">
+                        <button type="button" class="difficulty-btn px-3 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200 rounded-l-lg" data-difficulty="all">
+                            全部难度
                         </button>
-                        <button type="button" class="difficulty-btn px-4 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200" data-difficulty="easy">
+                        <button type="button" class="difficulty-btn px-3 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200" data-difficulty="入门">
                             入门
                         </button>
-                        <button type="button" class="difficulty-btn px-4 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200" data-difficulty="medium">
-                            普及
+                        <button type="button" class="difficulty-btn px-3 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200" data-difficulty="普及-">
+                            普及-
                         </button>
-                        <button type="button" class="difficulty-btn px-4 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200 rounded-r-lg" data-difficulty="hard">
-                            提高
+                        <button type="button" class="difficulty-btn px-3 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200" data-difficulty="普及/提高-">
+                            普及/提高-
+                        </button>
+                        <button type="button" class="difficulty-btn px-3 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200" data-difficulty="普及+/提高">
+                            普及+/提高
+                        </button>
+                        <button type="button" class="difficulty-btn px-3 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200" data-difficulty="提高+/省选-">
+                            提高+/省选-
+                        </button>
+                        <button type="button" class="difficulty-btn px-3 py-2 text-sm bg-gray-100 text-secondary hover:bg-gray-200" data-difficulty="省选/NOI-">
+                            省选/NOI-
+                        </button>
+                        <button type="button" class="difficulty-btn px-3 py-2 text-sm bg-primary text-white rounded-r-lg" data-difficulty="NOI/NOI+/CTSC">
+                            NOI/NOI+/CTSC <i class="fa fa-star ml-1"></i>
                         </button>
                     </div>
                 </div>
@@ -104,6 +143,17 @@
                                class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary">
                         <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-secondary"></i>
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 高难度题解专区 -->
+        <div class="bg-gray-100 border-l-4 border-difficulty-NOI/NOI+/CTSC p-4 mb-8 rounded-r-lg">
+            <div class="flex items-start">
+                <i class="fa fa-trophy text-difficulty-NOI/NOI+/CTSC mt-1 mr-3 text-lg"></i>
+                <div>
+                    <h3 class="font-medium">NOI/NOI+/CTSC 题解专区</h3>
+                    <p class="text-sm text-secondary mt-1">包含最高难度级别的题解，深入分析算法原理与优化策略</p>
                 </div>
             </div>
         </div>
@@ -154,75 +204,80 @@
         // 设置当前年份
         document.getElementById('currentYear').textContent = new Date().getFullYear();
         
-        // 模拟题解数据（实际项目中可从JSON文件加载）
+        // 难度配置映射表
+        const difficultyConfig = {
+            '入门': { score: 1, color: '#4CAF50' },
+            '普及-': { score: 10, color: '#8BC34A' },
+            '普及/提高-': { score: 15, color: '#CDDC39' },
+            '普及+/提高': { score: 25, color: '#FFC107' },
+            '提高+/省选-': { score: 40, color: '#FF9800' },
+            '省选/NOI-': { score: 55, color: '#F44336' },
+            'NOI/NOI+/CTSC': { score: 100, color: '#222222' }
+        };
+        
+        // 题解数据（以最高难度为主）
         const solutionsData = [
             {
-                id: "P1001",
-                title: "A+B Problem",
-                difficulty: "easy",
-                difficultyText: "入门",
+                id: "P6186",
+                title: "【模板】后缀自动机",
+                difficulty: "NOI/NOI+/CTSC",
                 date: "2025-07-28",
-                tags: ["基础", "数学"],
-                description: "最基础的A+B问题，考察输入输出和基本运算",
-                contentFile: "luogu/solutions/p1001.html"
+                tags: ["字符串", "后缀自动机", "模板"],
+                description: "后缀自动机模板题解析，包含构造原理与优化实现，适用于处理各类字符串问题",
+                contentFile: "luogu/solutions/p6186.html"
             },
             {
-                id: "P1035",
-                title: "级数求和",
-                difficulty: "easy",
-                difficultyText: "入门",
+                id: "P5357",
+                title: "【模板】AC自动机（二次加强版）",
+                difficulty: "NOI/NOI+/CTSC",
                 date: "2025-07-25",
-                tags: ["循环", "数学"],
-                description: "计算调和级数的和，直到满足精度要求",
-                contentFile: "luogu/solutions/p1035.html"
+                tags: ["字符串", "AC自动机", "模板"],
+                description: "AC自动机二次加强版解析，处理多模式串匹配问题的高效解法，包含失败指针优化",
+                contentFile: "luogu/solutions/p5357.html"
             },
             {
-                id: "P1152",
-                title: "欢乐的跳",
-                difficulty: "medium",
-                difficultyText: "普及-",
+                id: "P3321",
+                title: "[SDOI2015]序列统计",
+                difficulty: "NOI/NOI+/CTSC",
                 date: "2025-07-20",
-                tags: ["数组", "模拟"],
-                description: "判断序列是否为欢乐的跳，考察数组操作和逻辑判断",
-                contentFile: "luogu/solutions/p1152.html"
+                tags: ["数论", "生成函数", "快速幂"],
+                description: "结合生成函数与数论的经典问题，详细讲解多项式乘法优化与离散对数应用",
+                contentFile: "luogu/solutions/p3321.html"
             },
             {
-                id: "P1217",
-                title: "回文质数",
-                difficulty: "medium",
-                difficultyText: "普及",
+                id: "P4769",
+                title: "[NOI2018] 冒泡排序",
+                difficulty: "NOI/NOI+/CTSC",
                 date: "2025-07-15",
-                tags: ["质数", "回文数", "枚举"],
-                description: "找出指定范围内的回文质数，考察优化算法和数学知识",
-                contentFile: "luogu/solutions/p1217.html"
+                tags: ["排列", "组合数学", "树状数组"],
+                description: "深入分析冒泡排序的逆序对性质，推导高效计数公式，时间复杂度优化至O(n log n)",
+                contentFile: "luogu/solutions/p4769.html"
             },
             {
-                id: "P1379",
-                title: "八数码难题",
-                difficulty: "hard",
-                difficultyText: "提高-",
+                id: "P5664",
+                title: "Emiya 家今天的饭",
+                difficulty: "省选/NOI-",
                 date: "2025-07-10",
-                tags: ["BFS", "状态压缩", "哈希"],
-                description: "经典的八数码问题，使用广度优先搜索求解",
-                contentFile: "luogu/solutions/p1379.html"
+                tags: ["动态规划", "容斥原理"],
+                description: "使用容斥原理优化动态规划的经典题目，将时间复杂度从O(n^3 m)降至O(n^2 m)",
+                contentFile: "luogu/solutions/p5664.html"
             },
             {
-                id: "P1434",
-                title: "滑雪",
-                difficulty: "hard",
-                difficultyText: "提高",
+                id: "P4310",
+                title: "绝世好题",
+                difficulty: "提高+/省选-",
                 date: "2025-07-05",
-                tags: ["DFS", "动态规划", "记忆化"],
-                description: "寻找最长滑雪路径，考察深度优先搜索和动态规划结合",
-                contentFile: "luogu/solutions/p1434.html"
+                tags: ["动态规划", "位运算"],
+                description: "利用位运算性质优化动态规划状态转移，适合初学者理解状态压缩思想",
+                contentFile: "luogu/solutions/p4310.html"
             }
         ];
         
         // 初始化页面
         function initPage() {
             try {
-                // 渲染题解列表
-                renderSolutions(solutionsData);
+                // 默认显示最高难度题解
+                filterSolutions('NOI/NOI+/CTSC');
                 
                 // 绑定筛选事件
                 bindFilterEvents();
@@ -250,8 +305,16 @@
             container.innerHTML = '';
             
             solutions.forEach(solution => {
+                const config = difficultyConfig[solution.difficulty];
+                const isHighDifficulty = solution.difficulty === 'NOI/NOI+/CTSC' || solution.difficulty === '省选/NOI-';
+                
                 const card = document.createElement('div');
-                card.className = 'solution-card bg-white rounded-lg overflow-hidden shadow-sm';
+                // 高难度题目添加特殊标记
+                const cardClass = isHighDifficulty
+                    ? 'solution-card high-difficulty bg-white rounded-lg overflow-hidden shadow-sm'
+                    : 'solution-card bg-white rounded-lg overflow-hidden shadow-sm';
+                
+                card.className = cardClass;
                 card.innerHTML = `
                     <div class="p-5">
                         <div class="flex justify-between items-start mb-3">
@@ -260,8 +323,10 @@
                                     ${solution.id}: ${solution.title}
                                 </a>
                             </h3>
-                            <span class="tag font-medium" style="background-color: rgba(var(--difficulty-color), 0.1); color: rgb(var(--difficulty-color))">
-                                ${solution.difficultyText}
+                            <span class="difficulty-badge flex items-center" 
+                                  style="background-color: ${config.color}20; color: ${config.color}">
+                                ${solution.difficulty}
+                                ${solution.difficulty === 'NOI/NOI+/CTSC' ? '<i class="fa fa-star ml-1"></i>' : ''}
                             </span>
                         </div>
                         
@@ -276,7 +341,10 @@
                         </div>
                         
                         <div class="flex justify-between items-center text-xs text-secondary">
-                            <span><i class="fa fa-calendar-o mr-1"></i>${solution.date}</span>
+                            <div class="flex items-center">
+                                <span><i class="fa fa-calendar-o mr-1"></i>${solution.date}</span>
+                                <span class="ml-3"><i class="fa fa-signal mr-1"></i>难度分: ${config.score}</span>
+                            </div>
                             <a href="${solution.contentFile}" class="text-primary hover:underline">
                                 查看题解 <i class="fa fa-angle-right ml-1"></i>
                             </a>
@@ -285,12 +353,7 @@
                 `;
                 
                 // 设置难度颜色变量
-                const colorMap = {
-                    easy: '76, 175, 80',    // 绿色
-                    medium: '255, 193, 7',  // 黄色
-                    hard: '244, 67, 54'     // 红色
-                };
-                card.style.setProperty('--difficulty-color', colorMap[solution.difficulty]);
+                card.style.setProperty('--difficulty-color', config.color);
                 
                 container.appendChild(card);
             });
