@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客标题 - Li Qirui的博客</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Markdown渲染所需的CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.5.1/github-markdown.min.css">
+
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#333333',
+                        secondary: '#666666',
+                        accent: '#4F46E5',
+                        light: '#F5F5F5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Consolas', 'Monaco', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-balance {
+                text-wrap: balance;
+            }
+            .nav-link {
+                position: relative;
+            }
+            .nav-link::after {
+                content: '';
+                position: absolute;
+                width: 0;
+                height: 1px;
+                bottom: -2px;
+                left: 0;
+                background-color: #333333;
+                transition: width 0.3s ease;
+            }
+            .nav-link:hover::after {
+                width: 100%;
+            }
+            .page-transition {
+                opacity: 0;
+                transform: translateY(20px);
+                transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                            transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .page-visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            .markdown-body {
+                font-size: 1rem;
+                line-height: 1.7;
+            }
+            .blog-image {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .blog-image:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-primary min-h-screen flex flex-col overflow-x-hidden">
+    <!-- 主页面容器 -->
+    <div id="main-content" class="page-transition w-full">
+        <!-- 导航栏 -->
+        <header class="w-full border-b border-gray-200 py-6 bg-white sticky top-0 z-10 backdrop-blur-sm bg-opacity-90">
+            <nav class="max-w-4xl mx-auto px-6 flex flex-wrap justify-between items-center gap-x-8 gap-y-2 text-secondary">
+                <a href="index.html" class="text-lg font-medium text-primary">Li Qirui</a>
+                <div class="flex flex-wrap gap-x-8 gap-y-2">
+                    <a href="index.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">HOME</a>
+                    <a href="blog.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary text-primary border-b border-primary pb-[2px]">BLOG</a>
+                    <a href="luogu.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">LUOGU</a>
+                    <a href="resources.html" class="nav-link text-lg font-light transition-colors duration-300 hover:text-primary">Resources</a>
+                </div>
+            </nav>
+        </header>
+
+        <!-- 博客内容容器 -->
+        <main class="max-w-3xl w-full mx-auto px-6 py-12">
+            <!-- 博客头部信息 -->
+            <div class="mb-12 page-transition">
+                <div class="flex items-center text-sm text-secondary mb-4">
+                    <span>技术博客</span>
+                    <span class="mx-2">•</span>
+                    <time datetime="2023-10-15">2023年10月15日</time>
+                    <span class="mx-2">•</span>
+                    <span>8分钟阅读</span>
+                </div>
+
+                <h1 class="text-[clamp(1.8rem,5vw,3rem)] font-light tracking-tight mb-6 leading-tight">
+                    Markdown语法完全指南与最佳实践
+                </h1>
+
+                <div class="flex items-center space-x-3 mb-8">
+                    <img src="https://picsum.photos/id/1005/40/40" alt="作者头像" class="w-10 h-10 rounded-full object-cover">
+                    <div>
+                        <p class="text-primary font-medium">Li Qirui</p>
+                        <p class="text-xs text-secondary">热衷于编程与技术探索</p>
+                    </div>
+                </div>
+
+                <div class="w-full h-[300px] md:h-[400px] overflow-hidden rounded-lg mb-8">
+                    <img src="https://picsum.photos/id/0/1200/800" alt="博客封面图：代码编辑器中的Markdown语法示例" class="w-full h-full object-cover blog-image">
+                </div>
+            </div>
+
+            <!-- 博客正文内容（Markdown风格） -->
+            <article class="markdown-body page-transition">
+                <p class="text-lg text-secondary mb-8 leading-relaxed">
+                    Markdown是一种轻量级标记语言，它允许人们使用易读易写的纯文本格式编写文档，然后转换成有效的XHTML（或者HTML）文档。本文将详细介绍Markdown的基本语法和高级用法，帮助你更高效地编写内容。
+                </p>
+
+                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">1. 标题</h2>
+                <p class="mb-4">Markdown支持6级标题，使用#号表示：</p>
+
+                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm overflow-x-auto">
+                    # 一级标题<br>
+                    ## 二级标题<br>
+                    ### 三级标题<br>
+                    #### 四级标题<br>
+                    ##### 五级标题<br>
+                    ###### 六级标题
+                </div>
+
+                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">2. 段落与换行</h2>
+                <p class="mb-4">段落是由一个或多个连续的文本行组成，段落之间用一个或多个空行分隔。</p>
+                <p class="mb-4">要创建换行，可以在 line 的末尾添加两个或多个空格，然后按 Enter。</p>
+
+                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">3. 强调</h2>
+                <p class="mb-4">可以使用星号(*)或下划线(_)来添加强调：</p>
+
+                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm">
+                    *斜体文本* 或 _斜体文本_<br>
+                    **粗体文本** 或 __粗体文本__<br>
+                    ***粗斜体文本*** 或 ___粗斜体文本___
+                </div>
+
+                <p class="mb-4">显示效果：</p>
+                <ul class="list-disc pl-6 mb-6 space-y-2">
+                    <li><em>斜体文本</em></li>
+                    <li><strong>粗体文本</strong></li>
+                    <li><strong><em>粗斜体文本</em></strong></li>
+                </ul>
+
+                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">4. 列表</h2>
+
+                <h3 class="text-xl font-medium mt-8 mb-4">4.1 无序列表</h3>
+                <p class="mb-4">使用星号(*), 加号(+)或减号(-)作为列表标记：</p>
+
+                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm">
+                    * 项目1<br>
+                    * 项目2<br>
+                    * 项目3<br>
+                    &nbsp;&nbsp;&nbsp;* 子项目1<br>
+                    &nbsp;&nbsp;&nbsp;* 子项目2
+                </div>
+
+                <h3 class="text-xl font-medium mt-8 mb-4">4.2 有序列表</h3>
+                <p class="mb-4">使用数字加英文句点(.)作为列表标记：</p>
+
+                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm">
+                    1. 第一步<br>
+                    2. 第二步<br>
+                    3. 第三步<br>
+                    &nbsp;&nbsp;&nbsp;1. 子步骤1<br>
+                    &nbsp;&nbsp;&nbsp;2. 子步骤2
+                </div>
+
+                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">5. 代码</h2>
+
+                <h3 class="text-xl font-medium mt-8 mb-4">5.1 行内代码</h3>
+                <p class="mb-4">使用反引号(`)包裹代码：</p>
+
+                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm">
+                    这是一行包含`console.log("Hello World")`的文本。
+                </div>
+
+                <h3 class="text-xl font-medium mt-8 mb-4">5.2 代码块</h3>
+                <p class="mb-4">使用三个反引号(```)包裹代码块，还可以指定语言：</p>
+
+                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm overflow-x-auto">
+                    ```python<br>
+                    def greet(name):<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;print(f"Hello, {name}!")<br>
+                    <br>
+                    greet("World")<br>
+                    ```
+                </div>
+
+                <p class="mb-4">显示效果：</p>
+                <pre class="bg-light p-4 rounded-lg mb-6 font-mono text-sm overflow-x-auto"><code class="language-python">def greet(name):
+    print(f"Hello, {name}!")
+
+greet("World")</code></pre>
+
+                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">6. 链接与图片</h2>
+
+                <h3 class="text-xl font-medium mt-8 mb-4">6.1 链接</h3>
+                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm">
+                    [链接文本](链接地址 "可选标题")
+                </div>
+                <p class="mb-4">示例：<a href="https://example.com" class="text-accent hover:underline" target="_blank">访问示例网站</a></p>
+
+                <h3 class="text-xl font-medium mt-8 mb-4">6.2 图片</h3>
+                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm">
+                    ![图片描述](图片地址 "可选标题")
+                </div>
+                <p class="mb-4">示例：</p>
+                <div class="my-6">
+                    <img src="https://picsum.photos/id/180/600/400" alt="示例图片：山脉风景" class="w-full h-auto rounded-lg blog-image">
+                </div>
+
+                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">7. 表格</h2>
+                <p class="mb-4">使用竖线(|)分隔列，短横线(-)分隔表头和内容：</p>
+
+                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm overflow-x-auto">
+                    | 姓名 | 年龄 | 职业 |<br>
+                    |------|------|------|<br>
+                    | 张三 | 25   | 工程师 |<br>
+                    | 李四 | 30   | 设计师 |
+                </div>
+
+                <p class="mb-4">显示效果：</p>
+                <table class="min-w-full border-collapse mb-6">
+                    <thead>
+                        <tr class="border-b border-gray-300">
+                            <th class="py-3 px-4 text-left">姓名</th>
+                            <th class="py-3 px-4 text-left">年龄</th>
+                            <th class="py-3 px-4 text-left">职业</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-gray-200">
+                            <td class="py-3 px-4">张三</td>
+                            <td class="py-3 px-4">25</td>
+                            <td class="py-3 px-4">工程师</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4">李四</td>
+                            <td class="py-3 px-4">30</td>
+                            <td class="py-3 px-4">设计师</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">8. 结语</h2>
+                <p class="mb-4">Markdown是一种简单而强大的标记语言，掌握它可以让你更专注于内容创作而非格式排版。希望本文能帮助你更好地理解和使用Markdown。</p>
+                <p class="mb-4">如果你有任何问题或建议，欢迎在下方留言讨论。</p>
+            </article>
+
+            <!-- 标签区域 -->
+            <div class="mt-16 mb-12 flex flex-wrap gap-3 page-transition">
+                <span class="text-secondary">标签：</span>
+                <a href="#" class="px-3 py-1 bg-light text-primary rounded-full text-sm hover:bg-gray-200 transition-colors duration-300">Markdown</a>
+                <a href="#" class="px-3 py-1 bg-light text-primary rounded-full text-sm hover:bg-gray-200 transition-colors duration-300">写作</a>
+                <a href="#" class="px-3 py-1 bg-light text-primary rounded-full text-sm hover:bg-gray-200 transition-colors duration-300">语法</a>
+                <a href="#" class="px-3 py-1 bg-light text-primary rounded-full text-sm hover:bg-gray-200 transition-colors duration-300">教程</a>
+            </div>
+
+            <!-- 分享区域 -->
+            <div class="mt-12 mb-16 flex items-center justify-between border-t border-b border-gray-200 py-6 page-transition">
+                <div class="text-secondary">分享本文：</div>
+                <div class="flex gap-4">
+                    <a href="#" class="w-10 h-10 rounded-full bg-light flex items-center justify-center text-secondary hover:bg-primary hover:text-white transition-all duration-300">
+                        <i class="fa fa-twitter"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-light flex items-center justify-center text-secondary hover:bg-primary hover:text-white transition-all duration-300">
+                        <i class="fa fa-facebook"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-light flex items-center justify-center text-secondary hover:bg-primary hover:text-white transition-all duration-300">
+                        <i class="fa fa-linkedin"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-light flex items-center justify-center text-secondary hover:bg-primary hover:text-white transition-all duration-300">
+                        <i class="fa fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 相关文章 -->
+            <div class="mt-20 mb-16 page-transition">
+                <h3 class="text-xl font-medium mb-8 pb-2 border-b border-gray-200">相关文章</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <a href="#" class="group">
+                        <div class="h-48 overflow-hidden rounded-lg mb-4">
+                            <img src="https://picsum.photos/id/160/600/400" alt="VS Code 插件推荐" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        </div>
+                        <h4 class="text-lg font-medium mb-2 group-hover:text-accent transition-colors duration-300">10个提升效率的VS Code插件</h4>
+                        <p class="text-secondary text-sm">2023年9月28日 • 6分钟阅读</p>
+                    </a>
+                    <a href="#" class="group">
+                        <div class="h-48 overflow-hidden rounded-lg mb-4">
+                            <img src="https://picsum.photos/id/48/600/400" alt="Git版本控制" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        </div>
+                        <h4 class="text-lg font-medium mb-2 group-hover:text-accent transition-colors duration-300">Git版本控制进阶技巧</h4>
+                        <p class="text-secondary text-sm">2023年8月15日 • 10分钟阅读</p>
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="bg-white border-t border-gray-200 mt-20">
+            <div class="max-w-4xl mx-auto px-6 py-12">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="text-center md:text-left">
+                        <h3 class="text-lg font-medium mb-2">Li Qirui</h3>
+                        <p class="text-secondary text-sm">热衷于编程与技术探索</p>
+                    </div>
+
+                    <div class="flex space-x-6">
+                        <a href="#" class="text-secondary hover:text-primary transition-colors duration-300">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-secondary hover:text-primary transition-colors duration-300">
+                            <i class="fa fa-linkedin text-xl"></i>
+                        </a>
+                        <a href="#" class="text-secondary hover:text-primary transition-colors duration-300">
+                            <i class="fa fa-envelope text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mt-10 pt-6 border-t border-gray-100 text-center text-xs text-gray-400">
+                    &copy; <span id="currentYear"></span> Li Qirui. All rights reserved.
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 回到顶部按钮 -->
+    <button id="backToTop" class="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg opacity-0 invisible transition-all duration-300 hover:bg-opacity-90">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // 设置当前年份
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // 页面滚动效果
+        const backToTopBtn = document.getElementById('backToTop');
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+            }
+        });
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 滚动动画 - 元素进入视口时显示
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('page-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // 监听所有需要动画的元素
+        document.querySelectorAll('.page-transition').forEach(el => {
+            observer.observe(el);
+        });
+
+        // 二进制序列监听功能（与主页保持一致）
+        const targetSequence = "01000111010000010100110101000101"; // "GAME"的二进制表示
+        let currentSequence = "";
+        const maxSequenceLength = targetSequence.length;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '0' || e.key === '1') {
+                currentSequence += e.key;
+
+                if (currentSequence.length > maxSequenceLength) {
+                    currentSequence = currentSequence.slice(1);
+                }
+
+                if (currentSequence === targetSequence) {
+                    navigateToGame();
+                    resetSequence();
+                }
+            } else {
+                resetSequence();
+            }
+        });
+
+        function resetSequence() {
+            currentSequence = "";
+        }
+
+        function navigateToGame() {
+            // 创建过渡层
+            const transitionOverlay = document.createElement('div');
+            transitionOverlay.id = 'transition-overlay';
+            transitionOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500';
+            transitionOverlay.innerHTML = `
+                <div class="text-white text-center">
+                    <div class="w-16 h-16 border-4 border-white border-t-accent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p>正在加载游戏...</p>
+                </div>
+            `;
+            document.body.appendChild(transitionOverlay);
+
+            // 触发过渡动画
+            setTimeout(() => {
+                transitionOverlay.classList.remove('opacity-0', 'pointer-events-none');
+                transitionOverlay.classList.add('opacity-100', 'pointer-events-auto');
+
+                setTimeout(() => {
+                    window.location.href = 'game/01.html';
+                }, 800);
+            }, 100);
+        }
+    </script>
+</body>
+</html>
