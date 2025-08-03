@@ -100,13 +100,13 @@
                 <div class="flex items-center text-sm text-secondary mb-4">
                     <span>技术博客</span>
                     <span class="mx-2">•</span>
-                    <time datetime="2023-10-15">2023年10月15日</time>
+                    <time datetime="2023-10-15">2025年7月29日</time>
                     <span class="mx-2">•</span>
                     <span>8分钟阅读</span>
                 </div>
 
                 <h1 class="text-[clamp(1.8rem,5vw,3rem)] font-light tracking-tight mb-6 leading-tight">
-                    Markdown语法完全指南与最佳实践
+                    题解：P13209 [GCJ 2016 Finals] Map Reduce
                 </h1>
 
                 <div class="flex items-center space-x-3 mb-8">
@@ -118,152 +118,233 @@
                 </div>
 
                 <div class="w-full h-[300px] md:h-[400px] overflow-hidden rounded-lg mb-8">
-                    <img src="https://picsum.photos/id/0/1200/800" alt="博客封面图：代码编辑器中的Markdown语法示例" class="w-full h-full object-cover blog-image">
+                    <img src="https://picsum.photos/id/0/1200/800" alt="博客封面图：题解：P13209 [GCJ 2016 Finals] Map Reduce" class="w-full h-full object-cover blog-image">
                 </div>
             </div>
 
             <!-- 博客正文内容（Markdown风格） -->
             <article class="markdown-body page-transition">
-                <p class="text-lg text-secondary mb-8 leading-relaxed">
-                    Markdown是一种轻量级标记语言，它允许人们使用易读易写的纯文本格式编写文档，然后转换成有效的XHTML（或者HTML）文档。本文将详细介绍Markdown的基本语法和高级用法，帮助你更高效地编写内容。
-                </p>
+                <h1>题解：P13209 [GCJ 2016 Finals] Map Reduce</h1>
+            <p style="font-size: .75em;">
+                <a rel="author">lqr2024</a>
+                ·
+            <time datetime="2025-07-29T23:22:10+08:00">2025-07-29 23:22:10</time>
+                ·
+            <a href="/article?category=2">题解</a>
+            </p>
+            <h1>题解：P13209</h1>
+            <h3>难度：NOI/NOI+/CTSC</h3>
+            <h3>算法：BFS</h3>
+            <h3>来源：Luogu - P13209 &lt;- Google Code Jam 2016</h3>
+            <h2>题干描述</h2>
+            <p>天才游戏设计师 Ben 正在为他即将发布的增强现实手游设计地图。最近，他制作了一张地图，用一个 R 行 C 列的矩阵表示。地图由若干 . 字符（表示空地）、若干 # 字符（表示不可通过的墙）、一个起点 S 和一个终点 F 组成。例如，地图可能如下所示：</p>
+            <pre>
+                <code>#############
+#S..#..##...#
+###.##..#.#F#
+#...##.##.###
+#.#.........#
+#############</code>
+            </pre>
+            <p>在 Ben 的游戏中，一条路径是一系列上下左右的步伐，从一个格子走到另一个格子，且不能经过任何不可通过的墙。</p>
+            <p>Ben 认为一张好地图需要满足以下条件：</p>
+            <p>任意两个空地（包括起点和终点）之间都存在一条路径。</p>
+            <p>为了保证结构完整性，不可通过的墙必须在边上相连，而不能只是通过角相连。对于地图中的任意 2×2 区域，如果该区域恰好有两堵墙，这两堵墙必须在同一行或同一列。换句话说，不能存在如下两种 2×2 区域的墙分布：</p>
+            <pre>
+                <code>#. .#
+.# #.</code>
+            </pre>
+            <p>地图的边界只能由不可通过的墙组成。一个格子被认为是边界，如果它在最上/最下行，或最左/最右列。</p>
+            <p>最短路径长度指的是从起点到终点所需的最少步数。例如，上述例子的最短路径长度为 17 步。</p>
+            <p>作为如此聪明的制图者，Ben 发现他设计的这张地图对朋友们来说太难了。他希望通过移除一些不可通过的墙来降低难度。具体来说，他想知道是否可以移除零个或若干墙，使得从起点到终点的最短路径恰好为 D 步，并且修改后的地图依然是好地图。注意，仅仅找到一条长度为 D 的路径是不够的，D 必须是最短路径长度。</p>
+            <p>例如，如果 D=15，我们可以移除终点正下方的一堵墙，得到一个合法解：</p>
+            <pre>
+                <code>#############
+#S..#..##...#
+###.##..#.#F#
+#...##.##.#.#
+#.#.........#
+#############</code>
+            </pre>
+            <p>如果 D=5，则没有解。</p>
+            <h2>基本可行性检查</h2>
+            <ul>
+                <li>
+                    <p>
+                        <strong>曼哈顿距离</strong>
+                        ：S到F的直线最短距离（上下左右移动的理论最小值），D不能小于此值。
+                    </p>
+                </li>
+                <li>
+                    <p>
+                        <strong>当前最短路径</strong>
+                        ：原始地图中S到F的最短路径（通过 BFS 计算），D不能大于此值（移除墙只会缩短或保持最短路径）。
+                    </p>
+                </li>
+                <li>
+                    <p>
+                        <strong>奇偶性一致</strong>
+                        ：S到F的路径长度奇偶性由其坐标决定（每步改变坐标和的奇偶性），故D必须与min_d、curr_d同奇偶（即 <la-tex display="inline">(curr_d−D) \bmod 2=0 </la-tex>
+                        ）。
+                    </p>
+                </li>
+            </ul>
+            <p>
+                <strong>若不满足上述条件，直接返回IMPOSSIBLE。</strong>
+            </p>
+            <h2>确定可安全移除的墙</h2>
+            <ul>
+                <li>
+                    <p>墙不在边界（边界必须是墙）。</p>
+                </li>
+                <li>
+                    <p>移除后不形成 invalid 的 2×2 区域（对角线分布的两堵墙）。</p>
+                </li>
+                <li>
+                    <p>相邻墙的数量和位置符合结构完整性（避免孤立墙或不合理连接）。</p>
+                </li>
+                <li>
+                    <p>通过 BFS 扩展可移除墙列表：移除一个墙后，检查其 8 邻域的墙是否变为可移除，逐步生成所有可移除墙。</p>
+                </li>
+            </ul>
+            <h2>二分搜索最优移除方案</h2>
+            <ul>
+                <li>对可移除墙列表，二分尝试移除前l个墙，检查最短路径是否≥D。</li>
+                <li>找到最大的l，使移除后最短路径≥D，再验证是否恰好为D。</li>
+            </ul>
+            <p>题目思路讲解完毕，上硬通货，代码！AC</p>
+            <pre>
+                <code class="language-cpp">#include &lt;bits/stdc++.h &gt;using namespace std;
 
-                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">1. 标题</h2>
-                <p class="mb-4">Markdown支持6级标题，使用#号表示：</p>
+typedef pair &lt;int, int &gt;pii;
+const int dx[] = {-1,0,1,0,-1,1,1,-1};
+const int dy[] = {0,1,0,-1,1,1,-1,-1};
 
-                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm overflow-x-auto">
-                    # 一级标题<br>
-                    ## 二级标题<br>
-                    ### 三级标题<br>
-                    #### 四级标题<br>
-                    ##### 五级标题<br>
-                    ###### 六级标题
-                </div>
+int manh_dist(pii S, pii F) {
+    return abs(S.first-F.first) + abs(S.second-F.second);
+}
 
-                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">2. 段落与换行</h2>
-                <p class="mb-4">段落是由一个或多个连续的文本行组成，段落之间用一个或多个空行分隔。</p>
-                <p class="mb-4">要创建换行，可以在 line 的末尾添加两个或多个空格，然后按 Enter。</p>
+int shrt_dist(const vector &lt;vector &lt;char &gt;&gt;&amp;M, pii S, pii F, int R, int C) {
+    vector &lt;vector &lt;int &gt;&gt;d(R, vector &lt;int &gt;(C, -1));
+    deque &lt;pii &gt;q;
+    q.push_back(S);
+    d[S.first][S.second] = 0;
+    while (!q.empty()) {
+        auto [r,c] = q.front(); q.pop_front();
+        if (r == F.first &amp;&amp;c == F.second) return d[r][c];
+        for (int i=0;i &lt;4;i++) {
+            int nr = r + dx[i], nc = c + dy[i];
+            if (nr &gt;=0 &amp;&amp;nr &lt;R &amp;&amp;nc &gt;=0 &amp;&amp;nc &lt;C &amp;&amp;M[nr][nc]!='#'&amp;&amp;d[nr][nc]==-1) {
+                d[nr][nc] = d[r][c]+1;
+                q.push_back({nr, nc});
+            }
+        }
+    }
+    assert(0);
+}
 
-                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">3. 强调</h2>
-                <p class="mb-4">可以使用星号(*)或下划线(_)来添加强调：</p>
+bool can_rm(const vector &lt;vector &lt;char &gt;&gt;&amp;M, pii p, int R, int C) {
+    int r = p.first, c = p.second;
+    if (r &lt;=0||r &gt;=R-1||c &lt;=0||c &gt;=C-1) return 0;
+    if (M[r][c]!='#') return 0;
+    if (M[r-1][c-1]!='#'&amp;&amp;M[r-1][c]=='#'&amp;&amp;M[r][c-1]=='#') return 0;
+    if (M[r-1][c+1]!='#'&amp;&amp;M[r-1][c]=='#'&amp;&amp;M[r][c+1]=='#') return 0;
+    if (M[r+1][c-1]!='#'&amp;&amp;M[r+1][c]=='#'&amp;&amp;M[r][c-1]=='#') return 0;
+    if (M[r+1][c+1]!='#'&amp;&amp;M[r+1][c]=='#'&amp;&amp;M[r][c+1]=='#') return 0;
+    int cnt=0, pr=0;
+    for (int i=0;i &lt;4;i++) {
+        int nr = r+dx[i], nc = c+dy[i];
+        if (M[nr][nc]=='#') { cnt++; pr ^= i; }
+    }
+    return cnt==0||cnt==1||(cnt==2 &amp;&amp;(pr &amp;1));
+}
 
-                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm">
-                    *斜体文本* 或 _斜体文本_<br>
-                    **粗体文本** 或 __粗体文本__<br>
-                    ***粗斜体文本*** 或 ___粗斜体文本___
-                </div>
+vector &lt;pii &gt;find_rm_list(vector &lt;vector &lt;char &gt;&gt;&amp;M, pii S, pii F, int R, int C) {
+    vector &lt;pii &gt;rm;
+    deque &lt;pii &gt;q;
+    set &lt;pii &gt;vis;
+    for (int r=0;r &lt;R;r++) for (int c=0;c &lt;C;c++) {
+        if (can_rm(M, {r,c}, R, C)) { vis.insert({r,c}); q.push_back({r,c}); }
+    }
+    while (!q.empty()) {
+        auto [r,c] = q.front(); q.pop_front();
+        if (!can_rm(M, {r,c}, R, C)) { vis.erase({r,c}); continue; }
+        rm.push_back({r,c});
+        M[r][c] = '.';
+        for (int i=0;i &lt;8;i++) {
+            int nr = r+dx[i], nc = c+dy[i];
+            pii p={nr,nc};
+            if (nr &gt;=0 &amp;&amp;nr &lt;R &amp;&amp;nc &gt;=0 &amp;&amp;nc &lt;C &amp;&amp;can_rm(M,p,R,C)&amp;&amp;!vis.count(p)) {
+                vis.insert(p); q.push_back(p);
+            }
+        }
+    }
+    return rm;
+}
 
-                <p class="mb-4">显示效果：</p>
-                <ul class="list-disc pl-6 mb-6 space-y-2">
-                    <li><em>斜体文本</em></li>
-                    <li><strong>粗体文本</strong></li>
-                    <li><strong><em>粗斜体文本</em></strong></li>
-                </ul>
+void apply_rm(vector &lt;vector &lt;char &gt;&gt;&amp;M, const vector &lt;pii &gt;&amp;rm, int l) {
+    for (int i=0;i &lt;rm.size();i++) {
+        auto [r,c] = rm[i];
+        M[r][c] = (i &lt;l)?'.':'#';
+    }
+}
 
-                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">4. 列表</h2>
+int bin_search(vector &lt;vector &lt;char &gt;&gt;&amp;M, pii S, pii F, int D, const vector &lt;pii &gt;&amp;rm, int R, int C) {
+    int l=0, r=rm.size(), res=0;
+    while (l &lt;=r) {
+        int m=l+(r-l)/2;
+        apply_rm(M, rm, m);
+        if (shrt_dist(M, S, F, R, C)&gt;=D) { res=m; l=m+1; }
+        else r=m-1;
+    }
+    return res;
+}
 
-                <h3 class="text-xl font-medium mt-8 mb-4">4.1 无序列表</h3>
-                <p class="mb-4">使用星号(*), 加号(+)或减号(-)作为列表标记：</p>
+bool is_inv(const vector &lt;vector &lt;char &gt;&gt;&amp;M, pii p, int R, int C) {
+    int r=p.first, c=p.second;
+    if (r &gt;=R-1||c &gt;=C-1) return 0;
+    if (M[r][c]=='#'&amp;&amp;M[r+1][c+1]=='#'&amp;&amp;M[r][c+1]!='#'&amp;&amp;M[r+1][c]!='#') return 1;
+    if (M[r][c+1]=='#'&amp;&amp;M[r+1][c]=='#'&amp;&amp;M[r][c]!='#'&amp;&amp;M[r+1][c+1]!='#') return 1;
+    return 0;
+}
 
-                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm">
-                    * 项目1<br>
-                    * 项目2<br>
-                    * 项目3<br>
-                    &nbsp;&nbsp;&nbsp;* 子项目1<br>
-                    &nbsp;&nbsp;&nbsp;* 子项目2
-                </div>
+bool check(const vector &lt;vector &lt;char &gt;&gt;&amp;M, pii S, pii F, int D, int R, int C) {
+    for (int r=0;r &lt;R;r++) for (int c=0;c &lt;C;c++) if (is_inv(M, {r,c}, R, C)) return 0;
+    return shrt_dist(M, S, F, R, C)==D;
+}
 
-                <h3 class="text-xl font-medium mt-8 mb-4">4.2 有序列表</h3>
-                <p class="mb-4">使用数字加英文句点(.)作为列表标记：</p>
+string solve() {
+    int R,C,D; cin &gt;&gt;R &gt;&gt;C &gt;&gt;D;
+    vector &lt;vector &lt;char &gt;&gt;M(R);
+    pii S,F;
+    for (int r=0;r &lt;R;r++) {
+        string s; cin &gt;&gt;s; M[r] = vector &lt;char &gt;(s.begin(), s.end());
+        for (int c=0;c &lt;C;c++) {
+            if (M[r][c]=='S') { S={r,c}; M[r][c]='.'; }
+            else if (M[r][c]=='F') { F={r,c}; M[r][c]='.'; }
+        }
+    }
+    int min_d=manh_dist(S,F), curr_d=shrt_dist(M,S,F,R,C);
+    if (!(min_d &lt;=D &amp;&amp;D &lt;=curr_d &amp;&amp;(curr_d-D)%2==0)) return "IMPOSSIBLE";
+    auto rm=find_rm_list(M, S, F, R, C);
+    int l=bin_search(M, S, F, D, rm, R, C);
+    apply_rm(M, rm, l);
+    if (!check(M, S, F, D, R, C)) assert(0);
+    M[S.first][S.second]='S'; M[F.first][F.second]='F';
+    string res="POSSIBLE\n";
+    for (int r=0;r &lt;R;r++) { res+=string(M[r].begin(), M[r].end())+"\n"; }
+    res.pop_back();
+    return res;
+}
 
-                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm">
-                    1. 第一步<br>
-                    2. 第二步<br>
-                    3. 第三步<br>
-                    &nbsp;&nbsp;&nbsp;1. 子步骤1<br>
-                    &nbsp;&nbsp;&nbsp;2. 子步骤2
-                </div>
-
-                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">5. 代码</h2>
-
-                <h3 class="text-xl font-medium mt-8 mb-4">5.1 行内代码</h3>
-                <p class="mb-4">使用反引号(`)包裹代码：</p>
-
-                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm">
-                    这是一行包含`console.log("Hello World")`的文本。
-                </div>
-
-                <h3 class="text-xl font-medium mt-8 mb-4">5.2 代码块</h3>
-                <p class="mb-4">使用三个反引号(```)包裹代码块，还可以指定语言：</p>
-
-                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm overflow-x-auto">
-                    ```python<br>
-                    def greet(name):<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;print(f"Hello, {name}!")<br>
-                    <br>
-                    greet("World")<br>
-                    ```
-                </div>
-
-                <p class="mb-4">显示效果：</p>
-                <pre class="bg-light p-4 rounded-lg mb-6 font-mono text-sm overflow-x-auto"><code class="language-python">def greet(name):
-    print(f"Hello, {name}!")
-
-greet("World")</code></pre>
-
-                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">6. 链接与图片</h2>
-
-                <h3 class="text-xl font-medium mt-8 mb-4">6.1 链接</h3>
-                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm">
-                    [链接文本](链接地址 "可选标题")
-                </div>
-                <p class="mb-4">示例：<a href="https://example.com" class="text-accent hover:underline" target="_blank">访问示例网站</a></p>
-
-                <h3 class="text-xl font-medium mt-8 mb-4">6.2 图片</h3>
-                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm">
-                    ![图片描述](图片地址 "可选标题")
-                </div>
-                <p class="mb-4">示例：</p>
-                <div class="my-6">
-                    <img src="https://picsum.photos/id/180/600/400" alt="示例图片：山脉风景" class="w-full h-auto rounded-lg blog-image">
-                </div>
-
-                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">7. 表格</h2>
-                <p class="mb-4">使用竖线(|)分隔列，短横线(-)分隔表头和内容：</p>
-
-                <div class="bg-light p-4 rounded-lg mb-6 font-mono text-sm overflow-x-auto">
-                    | 姓名 | 年龄 | 职业 |<br>
-                    |------|------|------|<br>
-                    | 张三 | 25   | 工程师 |<br>
-                    | 李四 | 30   | 设计师 |
-                </div>
-
-                <p class="mb-4">显示效果：</p>
-                <table class="min-w-full border-collapse mb-6">
-                    <thead>
-                        <tr class="border-b border-gray-300">
-                            <th class="py-3 px-4 text-left">姓名</th>
-                            <th class="py-3 px-4 text-left">年龄</th>
-                            <th class="py-3 px-4 text-left">职业</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b border-gray-200">
-                            <td class="py-3 px-4">张三</td>
-                            <td class="py-3 px-4">25</td>
-                            <td class="py-3 px-4">工程师</td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 px-4">李四</td>
-                            <td class="py-3 px-4">30</td>
-                            <td class="py-3 px-4">设计师</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h2 class="text-2xl font-medium mt-12 mb-6 pb-2 border-b border-gray-200">8. 结语</h2>
-                <p class="mb-4">Markdown是一种简单而强大的标记语言，掌握它可以让你更专注于内容创作而非格式排版。希望本文能帮助你更好地理解和使用Markdown。</p>
-                <p class="mb-4">如果你有任何问题或建议，欢迎在下方留言讨论。</p>
+int main() {
+    int T; cin &gt;&gt;T;
+    for (int t=1;t &lt;=T;t++) {
+        cout &lt;&lt;"Case #"&lt;&lt;t &lt;&lt;": "&lt;&lt;solve()&lt;&lt;endl;
+    }
+    return 0;
+}</code>
+            </pre>
             </article>
 
             <!-- 标签区域 -->
@@ -290,27 +371,6 @@ greet("World")</code></pre>
                     </a>
                     <a href="#" class="w-10 h-10 rounded-full bg-light flex items-center justify-center text-secondary hover:bg-primary hover:text-white transition-all duration-300">
                         <i class="fa fa-envelope"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- 相关文章 -->
-            <div class="mt-20 mb-16 page-transition">
-                <h3 class="text-xl font-medium mb-8 pb-2 border-b border-gray-200">相关文章</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <a href="#" class="group">
-                        <div class="h-48 overflow-hidden rounded-lg mb-4">
-                            <img src="https://picsum.photos/id/160/600/400" alt="VS Code 插件推荐" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                        </div>
-                        <h4 class="text-lg font-medium mb-2 group-hover:text-accent transition-colors duration-300">10个提升效率的VS Code插件</h4>
-                        <p class="text-secondary text-sm">2023年9月28日 • 6分钟阅读</p>
-                    </a>
-                    <a href="#" class="group">
-                        <div class="h-48 overflow-hidden rounded-lg mb-4">
-                            <img src="https://picsum.photos/id/48/600/400" alt="Git版本控制" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                        </div>
-                        <h4 class="text-lg font-medium mb-2 group-hover:text-accent transition-colors duration-300">Git版本控制进阶技巧</h4>
-                        <p class="text-secondary text-sm">2023年8月15日 • 10分钟阅读</p>
                     </a>
                 </div>
             </div>
